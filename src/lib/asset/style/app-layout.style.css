@@ -1,0 +1,254 @@
+html,
+body {
+	padding: 0;
+	margin: 0;
+	box-sizing: border-box;
+	height: 100%;
+}
+
+.my-app {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	overflow: hidden;
+
+	width: 100dvw;
+	height: 100dvh;
+
+	.my-main {
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		overflow: auto;
+	}
+}
+
+.my-web {
+	.my-main {
+		margin: 0 auto;
+		max-width: 1400px;
+	}
+}
+
+.my-dotted-background-teal {
+	display: flex;
+
+	min-height: 100vh;
+	width: 100%;
+
+	align-items: center;
+	justify-content: center;
+
+	/* Base background aligned with theme */
+	background-color: color-mix(in srgb, var(--color-base-100) 95%, var(--color-primary) 5%);
+
+	background-image:
+		radial-gradient(var(--color-primary) 1px, transparent 1px),
+		radial-gradient(var(--color-primary) 1px, transparent 1px);
+
+	background-size: 36px 36px;
+	background-position:
+		0 0,
+		18px 18px;
+
+	position: relative;
+	overflow: hidden;
+
+	padding: 1.25rem;
+}
+
+/* Sliding gradient layers (based on your example). */
+.my-auth-bg {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	z-index: 0;
+
+	/* Match your example: center content with a horizontally moving gradient. */
+	opacity: 0.8;
+	left: -50%;
+	right: -50%;
+
+	will-change: transform;
+}
+
+.my-auth-bg--1 {
+	animation: my-auth-slide 3s ease-in-out infinite alternate;
+	background-image: linear-gradient(-60deg, var(--color-primary) 50%, var(--color-secondary) 50%);
+}
+
+.my-auth-bg--2 {
+	animation: my-auth-slide 4s ease-in-out infinite alternate-reverse;
+	background-image: linear-gradient(-60deg, var(--color-secondary) 50%, var(--color-accent) 50%);
+}
+
+.my-auth-bg--3 {
+	animation: my-auth-slide 5s ease-in-out infinite alternate;
+	background-image: linear-gradient(-60deg, var(--color-accent) 50%, var(--color-primary) 50%);
+}
+
+.my-dotted-background-teal .my-main {
+	position: relative;
+	z-index: 1;
+}
+
+@keyframes my-auth-slide {
+	0% {
+		transform: translateX(-25%);
+	}
+	100% {
+		transform: translateX(25%);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.my-auth-bg {
+		/* Still animate, but extremely slow. */
+		animation-duration: 60s !important;
+	}
+}
+
+/* ===========================
+   Optional: Space Starfield BG
+   =========================== */
+.my-space-bg {
+	position: absolute;
+	inset: 0;
+	overflow: hidden;
+	z-index: 0;
+
+	/* Base deep space background */
+	background: linear-gradient(to bottom, #0b0b2b, #1b2735 70%, #090a0f);
+}
+
+/* Small twinkling stars */
+.my-space-bg__stars {
+	width: 1px;
+	height: 1px;
+	position: absolute;
+	background: #fff;
+	box-shadow:
+		2vw 5vh 2px #fff,
+		10vw 8vh 2px #fff,
+		15vw 15vh 1px #fff,
+		22vw 22vh 1px #fff,
+		28vw 12vh 2px #fff,
+		32vw 32vh 1px #fff,
+		38vw 18vh 2px #fff,
+		42vw 35vh 1px #fff,
+		48vw 25vh 1px #fff,
+		53vw 42vh 1px #fff,
+		58vw 15vh 2px #fff,
+		63vw 38vh 1px #fff,
+		68vw 28vh 2px #fff,
+		73vw 45vh 1px #fff,
+		78vw 32vh 2px #fff,
+		83vw 48vh 1px #fff,
+		88vw 20vh 2px #fff,
+		93vw 52vh 1px #fff,
+		98vw 35vh 1px #fff,
+		5vw 60vh 1px #fff,
+		12vw 65vh 1px #fff,
+		18vw 72vh 1px #fff,
+		25vw 78vh 1px #fff,
+		30vw 85vh 1px #fff,
+		35vw 68vh 1px #fff,
+		40vw 82vh 1px #fff,
+		45vw 92vh 1px #fff,
+		50vw 75vh 1px #fff,
+		55vw 88vh 1px #fff,
+		60vw 95vh 1px #fff,
+		65vw 72vh 1px #fff,
+		70vw 85vh 1px #fff,
+		75vw 78vh 1px #fff,
+		80vw 92vh 1px #fff,
+		85vw 82vh 1px #fff,
+		90vw 88vh 1px #fff,
+		95vw 75vh 1px #fff;
+	animation: my-space-twinkle 8s infinite linear;
+}
+
+/* Shooting stars */
+.my-space-bg__shooting-star {
+	position: absolute;
+	width: 100px;
+	height: 2px;
+	background: linear-gradient(90deg, #fff, transparent);
+	animation: my-space-shoot 3s infinite ease-in;
+}
+
+.my-space-bg__shooting-star:nth-of-type(1) {
+	top: 20%;
+	left: -100px;
+	animation-delay: 0s;
+}
+.my-space-bg__shooting-star:nth-of-type(2) {
+	top: 35%;
+	left: -100px;
+	animation-delay: 1s;
+}
+.my-space-bg__shooting-star:nth-of-type(3) {
+	top: 50%;
+	left: -100px;
+	animation-delay: 2s;
+}
+
+@keyframes my-space-twinkle {
+	0%,
+	100% {
+		opacity: 0.8;
+	}
+	50% {
+		opacity: 0.4;
+	}
+}
+
+@keyframes my-space-shoot {
+	0% {
+		transform: translateX(0) translateY(0) rotate(25deg);
+		opacity: 1;
+	}
+	100% {
+		transform: translateX(120vw) translateY(50vh) rotate(25deg);
+		opacity: 0;
+	}
+}
+
+/* Additional twinkling stars layers */
+.my-space-bg__stars::after {
+	content: '';
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	background: #fff;
+	box-shadow:
+		8vw 12vh 2px #fff,
+		16vw 18vh 1px #fff,
+		24vw 25vh 2px #fff,
+		33vw 15vh 1px #fff,
+		41vw 28vh 2px #fff,
+		49vw 35vh 1px #fff,
+		57vw 22vh 2px #fff,
+		65vw 42vh 1px #fff,
+		73vw 28vh 2px #fff,
+		81vw 48vh 1px #fff,
+		89vw 32vh 2px #fff,
+		97vw 45vh 1px #fff,
+		3vw 68vh 2px #fff,
+		11vw 75vh 1px #fff,
+		19vw 82vh 2px #fff,
+		27vw 88vh 2px #fff,
+		35vw 72vh 2px #fff,
+		43vw 85vh 1px #fff,
+		51vw 92vh 1px #fff,
+		59vw 78vh 1px #fff;
+	animation: my-space-twinkle 6s infinite linear reverse;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.my-space-bg__stars,
+	.my-space-bg__stars::after,
+	.my-space-bg__shooting-star {
+		animation-duration: 60s !important;
+	}
+}

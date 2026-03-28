@@ -1,0 +1,100 @@
+<script>
+	import {
+		LucideArchive,
+		LucideCable,
+		LucideCloud,
+		LucideCloudUpload,
+		LucideHardDrive,
+		LucideStar,
+		LucideUsers
+	} from '@lucide/svelte';
+</script>
+
+<section class="my-20 flex flex-col gap-20">
+	<section id="hero" class="my-20 flex justify-evenly">
+		<div>
+			<h1 class="icon-font text-5xl font-black">Storage As A Service</h1>
+			<p class="my-ft-lead">a portable service that integrates into your workflow.</p>
+
+      <div class="mt-10 gap-5 flex">
+        <button class="d-btn d-btn-primary">Get Started</button>
+        <button class="d-btn d-btn-outline">Host Your Own</button>
+      </div>
+		</div>
+		<div>
+			<LucideCloudUpload class="size-48 text-[#DE1A58]" />
+		</div>
+	</section>
+
+	<div class="my-ft-body-lg d-divider">Features</div>
+
+	<section id="features" class="justify-between flex gap-20">
+		<div class="d-card w-96 bg-base-100 shadow-sm">
+			<figure class="px-10 pt-10">
+				<LucideHardDrive class="size-28 text-primary" />
+			</figure>
+			<div class="d-card-body items-center text-center">
+				<h2 class="d-card-title">Local Drive</h2>
+				<p>
+					A card component has a figure, a body part, and inside body there are title and actions
+					parts
+				</p>
+			</div>
+		</div>
+		<div class="d-card w-96 bg-base-100 shadow-sm">
+			<figure class="px-10 pt-10">
+				<LucideCloud class="size-28 text-secondary" />
+			</figure>
+			<div class="d-card-body items-center text-center">
+				<h2 class="d-card-title">Cloud Storage</h2>
+				<p>
+					A card component has a figure, a body part, and inside body there are title and actions
+					parts
+				</p>
+			</div>
+		</div>
+		<div class="d-card w-96 bg-base-100 shadow-sm">
+			<figure class="px-10 pt-10">
+				<LucideCable class="size-28 text-info" />
+			</figure>
+			<div class="d-card-body items-center text-center">
+				<h2 class="d-card-title">API</h2>
+				<p>
+					A card component has a figure, a body part, and inside body there are title and actions
+					parts
+				</p>
+			</div>
+		</div>
+	</section>
+
+	<div class="my-ft-body-lg d-divider">Stats</div>
+
+	<div class="d-stats bg-base-100 py-5">
+		<div class="d-stat">
+			<div class="d-stat-figure text-secondary">
+				<LucideUsers class="size-12 text-primary" />
+			</div>
+			<div class="d-stat-title">Users</div>
+			<div class="d-stat-value">31K</div>
+			<div class="d-stat-desc">Jan 1st - Feb 1st</div>
+		</div>
+
+		<div class="d-stat">
+			<div class="d-stat-figure text-secondary">
+				<LucideArchive class="size-12 text-secondary" />
+			</div>
+			<div class="d-stat-title">Usage</div>
+			<div class="d-stat-value">4,200</div>
+			<div class="d-stat-desc">↗︎ 400 (22%)</div>
+		</div>
+
+		<div class="d-stat">
+			<div class="d-stat-figure text-secondary">
+				<LucideStar class="size-12 text-info" />
+			</div>
+			<div class="d-stat-title">GitHub Stars</div>
+			<div class="d-stat-value">1,200</div>
+			<div class="d-stat-desc">↘︎ 90 (14%)</div>
+		</div>
+	</div>
+</section>

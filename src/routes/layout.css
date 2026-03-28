@@ -1,3 +1,18 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
+
+@plugin 'daisyui' {
+	themes: all;
+	root: ':root';
+	include:;
+	exclude:;
+	prefix: 'd-';
+	logs: false;
+}
+
+/* Import Css From lib asset here */
+@import '../lib/asset/style/default.style.css';
+@import '../lib/asset/style/font.style.css';
+@import '../lib/asset/style/app-layout.style.css';
+@import '../lib/asset/style/daisyui.style.css';
