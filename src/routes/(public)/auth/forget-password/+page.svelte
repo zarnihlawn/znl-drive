@@ -34,8 +34,8 @@
 					{#if isSuccess}
 						<div class="d-alert d-alert-success">
 							<span>
-								If an account exists for that email, we’ve sent a password reset link. Please check your
-								inbox.
+								If an account exists for that email, we’ve sent a password reset link. Please check
+								your inbox.
 							</span>
 						</div>
 					{/if}
@@ -53,10 +53,9 @@
 						{isSubmitting ? 'Sending…' : 'Send reset link'}
 					</button>
 
-					<a class="d-link d-link-primary text-sm" href={resolve(`/auth/login`)}>Back to login</a>
+					<a class="d-link text-sm d-link-primary" href={resolve(`/auth/login`)}>Back to login</a>
 				</form>
 			</fieldset>
 		</div>
 	</div>
 </section>
-

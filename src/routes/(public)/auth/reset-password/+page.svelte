@@ -50,9 +50,7 @@
 
 			if (!res.ok) {
 				const message =
-					(await res.json().catch(() => null))?.message ??
-					(await res.text().catch(() => '')) ??
-					'';
+					(await res.json().catch(() => null))?.message ?? (await res.text().catch(() => '')) ?? '';
 				error = message || 'Failed to reset password. Please try again.';
 				return;
 			}
@@ -76,7 +74,7 @@
 					<div class="d-alert d-alert-error">
 						<span>Missing reset token.</span>
 					</div>
-					<a class="d-link d-link-primary text-sm" href={resolve(`/auth/forget-password`)}
+					<a class="d-link text-sm d-link-primary" href={resolve(`/auth/forget-password`)}
 						>Request a new link</a
 					>
 				{:else}
@@ -139,11 +137,10 @@
 							{isSubmitting ? 'Resetting…' : 'Reset password'}
 						</button>
 
-						<a class="d-link d-link-primary text-sm" href={resolve(`/auth/login`)}>Back to login</a>
+						<a class="d-link text-sm d-link-primary" href={resolve(`/auth/login`)}>Back to login</a>
 					</form>
 				{/if}
 			</fieldset>
 		</div>
 	</div>
 </section>
-

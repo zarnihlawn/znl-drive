@@ -1,8 +1,6 @@
 import { resolve } from '$app/paths';
 
-export type SendOtpResult =
-	| { ok: true; devOtp?: string }
-	| { ok: false; message: string };
+export type SendOtpResult = { ok: true; devOtp?: string } | { ok: false; message: string };
 
 export async function sendOtpToEmail(email: string): Promise<SendOtpResult> {
 	try {

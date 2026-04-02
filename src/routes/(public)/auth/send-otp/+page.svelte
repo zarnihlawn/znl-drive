@@ -14,7 +14,7 @@
 			<fieldset class="d-fieldset w-xs rounded-box border border-base-300 bg-base-200 p-4">
 				<legend class="my-ft-h1 d-fieldset-legend">Redirecting…</legend>
 				<div class="flex items-center gap-3">
-					<div class="d-loading d-loading-spinner d-loading-md" aria-label="Loading"></div>
+					<div class="d-loading d-loading-md d-loading-spinner" aria-label="Loading"></div>
 					<span>Taking you to OTP verification.</span>
 				</div>
 			</fieldset>

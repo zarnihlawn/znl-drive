@@ -34,9 +34,7 @@
 
 			if (!res.ok) {
 				const message =
-					(await res.json().catch(() => null))?.message ??
-					(await res.text().catch(() => '')) ??
-					'';
+					(await res.json().catch(() => null))?.message ?? (await res.text().catch(() => '')) ?? '';
 				error = message || 'Failed to send OTP. Please try again.';
 				return;
 			}
@@ -74,7 +72,7 @@
 				<div class="d-tooltip d-tooltip-primary" data-tip="go back">
 					<button
 						type="button"
-						class="d-btn d-btn-circle d-btn-primary d-btn-sm"
+						class="d-btn d-btn-circle d-btn-sm d-btn-primary"
 						onclick={goBack}
 						aria-label="Go back"
 					>
@@ -82,9 +80,9 @@
 					</button>
 				</div>
 				<div class="d-tooltip" data-tip="go home">
-				<a class="d-btn d-btn-circle  d-btn-sm" href={resolve(`/(public)/onboarding`)}>
-					<LucideHouse class="size-6" />
-				</a>
+					<a class="d-btn d-btn-circle d-btn-sm" href={resolve(`/(public)/onboarding`)}>
+						<LucideHouse class="size-6" />
+					</a>
 				</div>
 			</div>
 			<fieldset class="d-fieldset w-xs rounded-box border border-base-300 bg-base-200 p-4">
@@ -135,12 +133,16 @@
 						{isSubmitting ? 'Sending OTP…' : 'Confirm'}
 					</button>
 				</form>
-				<div class="flex flex-col gap-4 mt-3">
+				<div class="mt-3 flex flex-col gap-4">
 					<div class="text-xs">
-						Already have an account? <a href={resolve(`/auth/login`)} class="d-link d-link-info">LOGIN</a>
+						Already have an account? <a href={resolve(`/auth/login`)} class="d-link d-link-info"
+							>LOGIN</a
+						>
 					</div>
 					<div class="text-xs">
-						Forgot password? <a href={resolve(`/auth/reset-password`)} class="d-link d-link-info">RESET PASSWORD</a>
+						Forgot password? <a href={resolve(`/auth/reset-password`)} class="d-link d-link-info"
+							>RESET PASSWORD</a
+						>
 					</div>
 				</div>
 				<div class="d-divider">OR</div>

@@ -10,22 +10,21 @@
 <div class="my-app">
 	<div class="d-navbar bg-base-100 shadow-sm">
 		<div class="flex-1">
-			<a class="d-btn d-btn-ghost text-xl" href={resolve('/home')}>ZNL-DRIVE</a>
-      
+			<a class="d-btn text-xl d-btn-ghost" href={resolve('/home')}>ZNL-DRIVE</a>
 		</div>
 		<div class="flex gap-5">
-			<input type="text" placeholder="Search" class="d-input d-input-bordered w-24 md:w-auto" />
+			<input type="text" placeholder="Search" class="d-input-bordered d-input w-24 md:w-auto" />
 			<div class="d-dropdown d-dropdown-end">
-				<div tabindex="0" role="button" class="d-btn d-btn-ghost d-btn-circle d-avatar">
-						<div
-							class="ring-primary ring-offset-base-100 flex h-10 w-10 items-center justify-center rounded-full ring-2 ring-offset-2"
-						>
-							<span class="text-lg font-bold select-none">{initials}</span>
-						</div>
+				<div tabindex="0" role="button" class="d-btn d-avatar d-btn-circle d-btn-ghost">
+					<div
+						class="flex h-10 w-10 items-center justify-center rounded-full ring-2 ring-primary ring-offset-2 ring-offset-base-100"
+					>
+						<span class="text-lg font-bold select-none">{initials}</span>
+					</div>
 				</div>
 				<ul
 					tabindex="-1"
-					class="d-menu d-menu-sm d-dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
+					class="d-dropdown-content d-menu z-1 mt-3 w-52 d-menu-sm rounded-box bg-base-100 p-2 shadow"
 				>
 					<li>
 						<a class="justify-between" href={resolve('/home')}>
@@ -43,10 +42,8 @@
 			</div>
 		</div>
 	</div>
-  <main class="my-main">
-  <aside>
-
-  </aside>
-    {@render children?.()}
-  </main>
+	<main class="my-main">
+		<aside></aside>
+		{@render children?.()}
+	</main>
 </div>

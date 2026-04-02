@@ -54,4 +54,3 @@ export function getFromAddress(): string | null {
 	const gmailFrom = (env as Record<string, string | undefined>).GMAIL_USER;
 	return gmailFrom ? gmailFrom.trim() : null;
 }
-

@@ -79,7 +79,10 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		if (/exist|already|duplicate|USER_ALREADY_EXISTS/i.test(message)) {
 			throw error(409, 'An account with this email already exists. Please log in instead.');
 		}
-		throw error(500, dev ? `Signup failed: ${message}` : 'Failed to create account. Please try again.');
+		throw error(
+			500,
+			dev ? `Signup failed: ${message}` : 'Failed to create account. Please try again.'
+		);
 	}
 
 	// Cleanup OTP cookies after successful signup
@@ -91,4 +94,3 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 	throw redirect(303, resolve('/home'));
 };
-

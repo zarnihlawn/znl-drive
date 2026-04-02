@@ -148,10 +148,9 @@
 						</button>
 					</form>
 				{:else}
-					<div class="d-loading d-loading-spinner d-loading-md" aria-label="Loading"></div>
+					<div class="d-loading d-loading-md d-loading-spinner" aria-label="Loading"></div>
 				{/if}
 			</fieldset>
 		</div>
 	</div>
 </section>
-

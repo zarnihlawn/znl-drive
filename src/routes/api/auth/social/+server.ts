@@ -18,9 +18,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	if (!provider) throw error(400, 'Missing or invalid provider');
 
 	const callbackURL =
-		typeof body?.callbackURL === 'string' && body.callbackURL
-			? body.callbackURL
-			: resolve('/home');
+		typeof body?.callbackURL === 'string' && body.callbackURL ? body.callbackURL : resolve('/home');
 
 	try {
 		const result = await auth.api.signInSocial({
@@ -69,4 +67,3 @@ export const GET: RequestHandler = async ({ url, request }) => {
 
 	throw redirect(303, callbackURL);
 };
-

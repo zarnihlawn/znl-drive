@@ -39,7 +39,10 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		if (dev) {
 			return json({ success: true, devOtp: otp });
 		}
-		throw error(500, 'SMTP is not configured. Set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM.');
+		throw error(
+			500,
+			'SMTP is not configured. Set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM.'
+		);
 	}
 
 	try {
@@ -62,4 +65,3 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 	return json({ success: true });
 };
-

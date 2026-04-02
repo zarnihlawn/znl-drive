@@ -32,4 +32,3 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 	return json({ success: true });
 };
-

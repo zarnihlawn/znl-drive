@@ -54,4 +54,3 @@ export function unsealSignupOtpCookie(value: string): SignupOtpPayload | null {
 		return null;
 	}
 }
-

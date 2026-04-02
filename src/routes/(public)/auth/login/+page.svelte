@@ -50,22 +50,20 @@
 		}
 	}
 
-
 	onMount(() => {
 		const params = new URLSearchParams(window.location.search);
 		showResetSuccess = params.get('reset') === '1';
 	});
-</script>	
+</script>
 
 <section class="m-auto max-w-xl">
 	<div class="d-card border border-base-content/10 bg-base-100 shadow-sm">
 		<div class="d-card-body">
-		
 			<div class="flex justify-between">
 				<div class="d-tooltip d-tooltip-primary" data-tip="go back">
 					<button
 						type="button"
-						class="d-btn d-btn-circle d-btn-primary d-btn-sm"
+						class="d-btn d-btn-circle d-btn-sm d-btn-primary"
 						onclick={goBack}
 						aria-label="Go back"
 					>
@@ -73,14 +71,13 @@
 					</button>
 				</div>
 				<div class="d-tooltip" data-tip="go home">
-				<a class="d-btn d-btn-circle  d-btn-sm" href={resolve(`/(public)/onboarding`)}>
-					<LucideHouse class="size-6" />
-				</a>
+					<a class="d-btn d-btn-circle d-btn-sm" href={resolve(`/(public)/onboarding`)}>
+						<LucideHouse class="size-6" />
+					</a>
 				</div>
 			</div>
 			<!-- Login Form -->
-			<fieldset class="d-fieldset w-xs rounded-box border border-base-300 bg-base-200 p-4 ">
-				
+			<fieldset class="d-fieldset w-xs rounded-box border border-base-300 bg-base-200 p-4">
 				<legend class="my-ft-h1 d-fieldset-legend">LOGIN</legend>
 				<!-- Email Login -->
 				<form action={resolve(`/api/auth/login`)} method="POST" class="flex flex-col gap-5">
@@ -111,19 +108,20 @@
 							{/if}
 						</button>
 					</div>
-					<a class="d-link d-link-primary text-sm" href={resolve(`/auth/forget-password`)}>
-						Forgot password?
-					</a>
 
 					<button class="d-btn d-btn-primary" type="submit">Confirm</button>
 				</form>
 
-				<div class="flex flex-col gap-4 mt-3">
+				<div class="mt-3 flex flex-col gap-4">
 					<div class="text-xs">
-						Don't have an account? <a href={resolve(`/auth/signup`)} class="d-link d-link-info">SIGNUP</a>
+						Don't have an account? <a href={resolve(`/auth/signup`)} class="d-link d-link-info"
+							>SIGNUP</a
+						>
 					</div>
 					<div class="text-xs">
-						Forgot password? <a href={resolve(`/auth/forget-password`)} class="d-link d-link-info">FORGET PASSWORD</a>
+						Forgot password? <a href={resolve(`/auth/forget-password`)} class="d-link d-link-info"
+							>FORGET PASSWORD</a
+						>
 					</div>
 				</div>
 				<div class="d-divider">OR</div>
