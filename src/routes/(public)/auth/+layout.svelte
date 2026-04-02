@@ -6,8 +6,8 @@
 	<title>Auth | ZNL-DRIVE</title>
 </svelte:head>
 
-<div class="my-web my-dotted-background-teal">
-	<div class="my-app">
+<div class="my-app my-dotted-background-teal">
+	<div class="my-main">
 		{@render children?.()}
 	</div>
 </div>

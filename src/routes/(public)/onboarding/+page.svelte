@@ -16,10 +16,10 @@
 			<h1 class="icon-font text-5xl font-black">Storage As A Service</h1>
 			<p class="my-ft-lead">a portable service that integrates into your workflow.</p>
 
-      <div class="mt-10 gap-5 flex">
-        <button class="d-btn d-btn-primary">Get Started</button>
-        <button class="d-btn d-btn-outline">Host Your Own</button>
-      </div>
+			<div class="mt-10 flex gap-5">
+				<button class="d-btn d-btn-primary">Get Started</button>
+				<button class="d-btn d-btn-outline">Host Your Own</button>
+			</div>
 		</div>
 		<div>
 			<LucideCloudUpload class="size-48 text-[#DE1A58]" />
@@ -28,7 +28,7 @@
 
 	<div class="my-ft-body-lg d-divider">Features</div>
 
-	<section id="features" class="justify-between flex gap-20">
+	<section id="features" class="flex justify-between gap-20">
 		<div class="d-card w-96 bg-base-100 shadow-sm">
 			<figure class="px-10 pt-10">
 				<LucideHardDrive class="size-28 text-primary" />
