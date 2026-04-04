@@ -13,7 +13,35 @@ export const FILE_LABEL_COLORS = [
 
 export type FileLabelColorId = (typeof FILE_LABEL_COLORS)[number];
 
-/** Daisy badge modifier for a compact label cell. */
+/** Text color for file/folder icons from label (no badge). */
+export function fileLabelIconClass(color: string | null | undefined): string {
+	if (color === null || color === undefined) {
+		return 'text-base-content/60';
+	}
+	switch (color) {
+		case 'base':
+			return 'text-base-content/60';
+		case 'primary':
+			return 'text-primary';
+		case 'secondary':
+			return 'text-secondary';
+		case 'accent':
+			return 'text-accent';
+		case 'neutral':
+			return 'text-neutral';
+		case 'info':
+			return 'text-info';
+		case 'success':
+			return 'text-success';
+		case 'warning':
+			return 'text-warning';
+		case 'error':
+			return 'text-error';
+		default:
+			return 'text-base-content/60';
+	}
+}
+
 export function fileLabelBadgeClass(color: string): string {
 	switch (color) {
 		case 'primary':
@@ -37,7 +65,10 @@ export function fileLabelBadgeClass(color: string): string {
 	}
 }
 
-export function fileLabelBorderClass(color: string): string {
+export function fileLabelBorderClass(color: string | null | undefined): string {
+	if (color === null || color === undefined) {
+		return 'border-l-base-content/15';
+	}
 	switch (color) {
 		case 'primary':
 			return 'border-l-primary';

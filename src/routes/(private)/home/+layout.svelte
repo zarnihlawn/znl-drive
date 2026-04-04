@@ -14,6 +14,7 @@
 	import { toastService } from '$lib/service/toast.service.svelte';
 	import { getUserInitials } from '$lib/tool/user-initials';
 	import {
+		LucideArrowLeft,
 		LucideClock,
 		LucideFolderPlus,
 		LucideHouse,
@@ -76,7 +77,11 @@
 				method: 'POST',
 				credentials: 'include',
 				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({ name, storageProvider: driveStorage.current })
+				body: JSON.stringify({
+					name,
+					storageProvider: driveStorage.current,
+					...(data.currentFolder ? { parentId: data.currentFolder.id } : {})
+				})
 			});
 			if (!r.ok) throw new Error(await r.text());
 			bumpDriveListRefresh();
@@ -103,9 +108,14 @@
 		uploading = true;
 		uploadProgress = 0;
 		try {
-			await uploadFilesWithProgress(pickerFiles, driveStorage.current, (loaded, total) => {
-				uploadProgress = total ? Math.round((100 * loaded) / total) : 0;
-			});
+			await uploadFilesWithProgress(
+				pickerFiles,
+				driveStorage.current,
+				(loaded, total) => {
+					uploadProgress = total ? Math.round((100 * loaded) / total) : 0;
+				},
+				data.currentFolder?.id ?? null
+			);
 			bumpDriveListRefresh();
 			toastService.addToast('Upload complete', StatusColorEnum.SUCCESS);
 			uploadDialog?.close();
@@ -120,7 +130,7 @@
 		}
 	}
 
-	type BreadcrumbItem = { href: string; label: string; isLast: boolean };
+	type BreadcrumbItem = { href: string | null; label: string; isLast: boolean };
 
 	function formatBreadcrumbLabel(segment: string): string {
 		try {
@@ -132,19 +142,41 @@
 	}
 
 	const breadcrumbs = $derived.by((): BreadcrumbItem[] => {
+		if (data.sharedView) {
+			if (data.currentFolder) {
+				return [
+					{ href: resolve('/home/shared'), label: 'Shared', isLast: false },
+					{ href: null, label: data.currentFolder.name, isLast: true }
+				];
+			}
+			return [{ href: null, label: 'Shared', isLast: true }];
+		}
+		if (data.currentFolder) {
+			return [
+				{ href: resolve('/home'), label: 'Home', isLast: false },
+				{ href: null, label: data.currentFolder.name, isLast: true }
+			];
+		}
 		const segments = page.url.pathname.split('/').filter(Boolean);
 		if (segments.length === 0) {
-			return [{ href: resolve('/home'), label: 'Home', isLast: true }];
+			return [{ href: null, label: 'Home', isLast: true }];
 		}
 		return segments.map((segment, i) => ({
-			href: '/' + segments.slice(0, i + 1).join('/'),
+			href: i === segments.length - 1 ? null : '/' + segments.slice(0, i + 1).join('/'),
 			label: formatBreadcrumbLabel(segment),
 			isLast: i === segments.length - 1
 		}));
 	});
 
-	/** Heading: human‑readable label for the last URL segment (current leaf). */
+	const upFolderHref = $derived.by(() => {
+		if (!data.currentFolder) return data.sharedView ? resolve('/home/shared') : resolve('/home');
+		return data.currentFolder.upHref;
+	});
+
+	/** Heading: current folder name or last URL segment. */
 	const pageTitle = $derived.by(() => {
+		if (data.sharedView) return data.currentFolder?.name ?? 'Shared';
+		if (data.currentFolder) return data.currentFolder.name;
 		const segments = page.url.pathname.split('/').filter(Boolean);
 		const last = segments.at(-1);
 		if (!last) return 'Home';
@@ -208,7 +240,8 @@
 		<div class="flex min-h-0 flex-1 px-5 py-5">
 			<!-- Sidebar -->
 			<aside class="flex h-full w-64 shrink-0 flex-col">
-				<!-- NEW: folder or upload -->
+				<!-- NEW: folder or upload (not on Shared with me) -->
+				{#if !data.sharedView}
 				<div class="d-dropdown d-dropdown-bottom w-full" use:daisyDropdown>
 					<div tabindex="0" role="button" class="d-btn d-btn-wide d-btn-primary m-1 w-full max-w-full">
 						<LucidePlus class="size-4 shrink-0" aria-hidden="true" />
@@ -304,6 +337,7 @@
 						</div>
 					</div>
 				</dialog>
+				{/if}
 
 				<span class="d-divider"></span>
 
@@ -350,15 +384,25 @@
 			<div class="flex min-h-0 min-w-0 flex-1 flex-col px-5">
 				<div class="flex shrink-0 justify-between rounded-lg bg-base-100 p-4">
 				<div>
-					<h1 class="mb-2 text-2xl font-bold">{pageTitle}</h1>
+					<div class="mb-2 flex flex-wrap items-center gap-2">
+						{#if data.currentFolder}
+							<a class="d-btn d-btn-ghost d-btn-sm gap-1 shrink-0" href={upFolderHref}>
+								<LucideArrowLeft class="size-4" aria-hidden="true" />
+								Up
+							</a>
+						{/if}
+						<h1 class="text-2xl font-bold">{pageTitle}</h1>
+					</div>
 					<nav class="d-breadcrumbs min-w-0 pr-2 italic" aria-label="Breadcrumb">
 						<ul>
-							{#each breadcrumbs as crumb, i (crumb.href + i)}
+							{#each breadcrumbs as crumb, i (String(i) + (crumb.href ?? '') + crumb.label)}
 								<li>
 									{#if crumb.isLast}
 										<span aria-current="page">{crumb.label}</span>
-									{:else}
+									{:else if crumb.href}
 										<a href={crumb.href}>{crumb.label}</a>
+									{:else}
+										<span>{crumb.label}</span>
 									{/if}
 								</li>
 							{/each}

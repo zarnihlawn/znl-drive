@@ -14,7 +14,7 @@ const patchSchema = z
 		isPinned: z.boolean().optional(),
 		isStarred: z.boolean().optional(),
 		name: z.string().min(1).max(500).optional(),
-		color: colorEnum.optional(),
+		color: z.union([colorEnum, z.null()]).optional(),
 		trashed: z.boolean().optional()
 	})
 	.strict();
@@ -60,7 +60,7 @@ export const PATCH: RequestHandler = async ({ request, params }) => {
 	if (body.isPinned !== undefined) updates.isPinned = body.isPinned;
 	if (body.isStarred !== undefined) updates.isStarred = body.isStarred;
 	if (body.name !== undefined) updates.name = sanitizeFileName(body.name);
-	if (body.color !== undefined) updates.color = body.color as FileLabelColorId;
+	if (body.color !== undefined) updates.color = body.color;
 	if (body.trashed !== undefined) {
 		updates.trashedAt = body.trashed ? new Date() : null;
 	}

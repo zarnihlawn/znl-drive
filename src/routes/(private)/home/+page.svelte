@@ -1,12 +1,20 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import { base } from '$app/paths';
-	import { patchDriveFile, type PatchDriveFileBody } from '$lib/client/drive-file';
+	import { goto } from '$app/navigation';
+	import { base, resolve } from '$app/paths';
+	import { page } from '$app/state';
+	import {
+		downloadDriveFileAsBlob,
+		patchDriveFile,
+		shareDriveFile,
+		type PatchDriveFileBody
+	} from '$lib/client/drive-file';
 	import { uploadFilesWithProgress } from '$lib/client/upload-drive';
 	import {
 		FILE_LABEL_COLORS,
 		fileLabelBadgeClass,
 		fileLabelBorderClass,
+		fileLabelIconClass,
 		type FileLabelColorId
 	} from '$lib/model/file-label-color';
 	import type { StorageProviderId } from '$lib/model/storage-provider';
@@ -16,14 +24,23 @@
 	import { driveStorage } from '$lib/state/storage-provider.svelte';
 	import { toastService } from '$lib/service/toast.service.svelte';
 	import { formatBytes } from '$lib/tool/format-bytes';
+	import type { PageProps } from './$types';
 	import {
+		LucideArrowLeft,
+		LucideDownload,
 		LucideEllipsisVertical,
 		LucideFile,
+		LucideFolder,
+		LucidePalette,
+		LucidePencil,
 		LucidePin,
+		LucideShare2,
 		LucideStar,
 		LucideTrash2
 	} from '@lucide/svelte';
 	import { onMount, tick } from 'svelte';
+
+	let { data }: PageProps = $props();
 
 	type ApiFile = {
 		id: string;
@@ -34,8 +51,9 @@
 		storageProvider: StorageProviderId;
 		isPinned: boolean;
 		isStarred: boolean;
-		color: string;
-		parentId: number | null;
+		color: string | null;
+		parentId: string | null;
+		ownerName: string;
 	};
 
 	type DriveItem = {
@@ -47,8 +65,9 @@
 		storageProvider: StorageProviderId;
 		pinned: boolean;
 		starred: boolean;
-		color: FileLabelColorId | string;
+		color: FileLabelColorId | string | null;
 		parentId: string | null;
+		ownerName: string;
 	};
 
 	let rows = $state<DriveItem[]>([]);
@@ -65,6 +84,11 @@
 
 	let colorDialogEl = $state<HTMLDialogElement | null>(null);
 	let colorTarget = $state<DriveItem | null>(null);
+
+	let shareDialogEl = $state<HTMLDialogElement | null>(null);
+	let shareTarget = $state<DriveItem | null>(null);
+	let shareEmailDraft = $state('');
+	let shareSubmitting = $state(false);
 
 	/** One floating menu (no Popover API — avoids ghost menus at 0,0 and stuck open state). */
 	let openFileActionsId = $state<string | null>(null);
@@ -147,19 +171,27 @@
 			storageProvider: f.storageProvider,
 			pinned: f.isPinned,
 			starred: f.isStarred,
-			color: f.color as FileLabelColorId,
-			parentId: f.parentId != null ? String(f.parentId) : null
+			color: f.color as FileLabelColorId | null,
+			parentId: f.parentId ?? null,
+			ownerName: f.ownerName
 		};
+	}
+
+	function enterFolder(item: DriveItem) {
+		if (item.itemType !== 'folder') return;
+		goto(`${resolve('/home')}?folder=${encodeURIComponent(item.id)}`);
 	}
 
 	async function loadFiles() {
 		loading = true;
 		loadError = null;
 		try {
-			const r = await fetch(
-				`${base}/api/drive/files?storageProvider=${encodeURIComponent(driveStorage.current)}`,
-				{ credentials: 'include' }
-			);
+			const folderId = page.url.searchParams.get('folder');
+			const qs = new URLSearchParams({
+				storageProvider: driveStorage.current
+			});
+			if (folderId) qs.set('parentId', folderId);
+			const r = await fetch(`${base}/api/drive/files?${qs}`, { credentials: 'include' });
 			if (!r.ok) {
 				const t = await r.text();
 				throw new Error(t || r.statusText);
@@ -178,6 +210,7 @@
 		if (!browser) return;
 		void driveListRefresh.tick;
 		void driveStorage.current;
+		void page.url.searchParams.get('folder');
 		void loadFiles();
 	});
 
@@ -186,6 +219,13 @@
 	const pinnedRows = $derived(rootRows.filter((r) => r.pinned));
 	const starredRows = $derived(rootRows.filter((r) => r.starred && !r.pinned));
 	const otherRows = $derived(rootRows.filter((r) => !r.pinned && !r.starred));
+
+	/** Parent folder URL from server (home root or parent folder). */
+	const backFolderHref = $derived.by(() => {
+		const cf = data.currentFolder;
+		if (!cf) return resolve('/home');
+		return cf.upHref;
+	});
 
 	const fileActionsMenuItem = $derived(
 		openFileActionsId ? (rows.find((r) => r.id === openFileActionsId) ?? null) : null
@@ -245,9 +285,59 @@
 		queueMicrotask(() => colorDialogEl?.showModal());
 	}
 
+	function openShareModal(item: DriveItem) {
+		closeFileActionsMenu();
+		shareTarget = item;
+		shareEmailDraft = '';
+		queueMicrotask(() => shareDialogEl?.showModal());
+	}
+
+	function closeShare() {
+		shareDialogEl?.close();
+		shareTarget = null;
+		shareEmailDraft = '';
+	}
+
+	async function submitShare() {
+		if (!shareTarget) return;
+		const email = shareEmailDraft.trim().toLowerCase();
+		if (!email) {
+			toastService.addToast('Enter an email address', StatusColorEnum.WARNING);
+			return;
+		}
+		shareSubmitting = true;
+		try {
+			const res = await shareDriveFile(shareTarget.id, { targetEmail: email, permission: 'read' });
+			toastService.addToast(
+				res.alreadyShared ? 'Already shared with that address' : 'Share created',
+				StatusColorEnum.SUCCESS
+			);
+			closeShare();
+		} catch (e) {
+			toastService.addToast(e instanceof Error ? e.message : 'Share failed', StatusColorEnum.ERROR);
+		} finally {
+			shareSubmitting = false;
+		}
+	}
+
+	async function onDownloadFile(item: DriveItem) {
+		closeFileActionsMenu();
+		try {
+			await downloadDriveFileAsBlob(item.id, item.name);
+		} catch (e) {
+			toastService.addToast(e instanceof Error ? e.message : 'Download failed', StatusColorEnum.ERROR);
+		}
+	}
+
 	async function pickColor(c: FileLabelColorId) {
 		if (!colorTarget) return;
-		await runPatch(colorTarget.id, { color: c }, 'Label updated');
+		await runPatch(colorTarget.id, { color: c }, 'Color updated');
+		colorDialogEl?.close();
+	}
+
+	async function clearItemColor() {
+		if (!colorTarget) return;
+		await runPatch(colorTarget.id, { color: null }, 'Color cleared');
 		colorDialogEl?.close();
 	}
 
@@ -256,9 +346,14 @@
 		dropUploading = true;
 		dropProgress = 0;
 		try {
-			await uploadFilesWithProgress(fileList, driveStorage.current, (loaded, total) => {
-				dropProgress = total ? Math.round((100 * loaded) / total) : 0;
-			});
+			await uploadFilesWithProgress(
+				fileList,
+				driveStorage.current,
+				(loaded, total) => {
+					dropProgress = total ? Math.round((100 * loaded) / total) : 0;
+				},
+				page.url.searchParams.get('folder')
+			);
 			bumpDriveListRefresh();
 			toastService.addToast(`Uploaded ${fileList.length} file(s)`, StatusColorEnum.SUCCESS);
 		} catch (err) {
@@ -337,9 +432,9 @@
 							<th class="w-28">Size</th>
 							<th class="w-36">Modified</th>
 							<th class="w-32">Storage</th>
+							<th class="min-w-[8rem]">Owner</th>
 							<th class="w-24 text-center">Pin</th>
 							<th class="w-24 text-center">Star</th>
-							<th class="w-28">Label</th>
 							<th class="w-14 text-center"></th>
 						</tr>
 					</thead>
@@ -381,8 +476,19 @@
 						{/if}
 
 						<tr class="bg-base-200/60 hover:bg-base-200/60">
-							<td colspan="8" class="text-base-content/80 py-2 text-xs font-semibold tracking-wide uppercase">
-								All files
+							<td colspan="8" class="py-2 text-xs font-semibold tracking-wide uppercase">
+								{#if data.currentFolder}
+									<a
+										href={backFolderHref}
+										class="text-base-content/80 hover:text-base-content inline-flex min-w-0 max-w-full items-center gap-2 normal-case no-underline hover:underline"
+										aria-label="Back out of {data.currentFolder.name}"
+									>
+										<LucideArrowLeft class="size-3.5 shrink-0" aria-hidden="true" />
+										<span class="truncate font-medium">{data.currentFolder.name}</span>
+									</a>
+								{:else}
+									<span class="text-base-content/80">All files</span>
+								{/if}
 							</td>
 						</tr>
 						{#if rootRows.length === 0 && !loading}
@@ -416,12 +522,53 @@
 		class="d-menu bg-base-100 fixed z-[999] m-0 w-52 rounded-box border border-base-200 p-2 shadow-md"
 		style="top: {fileActionsMenuPosition.top}px; left: {fileActionsMenuPosition.left}px;"
 	>
+		{#if fileActionsMenuItem.itemType === 'file'}
+			<li role="none">
+				<button
+					type="button"
+					role="menuitem"
+					class="justify-start gap-2"
+					onclick={() => void onDownloadFile(fileActionsMenuItem)}
+				>
+					<LucideDownload class="size-4 shrink-0" aria-hidden="true" />
+					Download
+				</button>
+			</li>
+		{/if}
+		{#if fileActionsMenuItem.itemType === 'file' || fileActionsMenuItem.itemType === 'folder'}
+			<li role="none">
+				<button
+					type="button"
+					role="menuitem"
+					class="justify-start gap-2"
+					onclick={() => openShareModal(fileActionsMenuItem)}
+				>
+					<LucideShare2 class="size-4 shrink-0" aria-hidden="true" />
+					Share…
+				</button>
+			</li>
+		{/if}
 		<li role="none">
-			<button type="button" role="menuitem" onclick={() => openRename(fileActionsMenuItem)}>Rename…</button>
+			<button
+				type="button"
+				role="menuitem"
+				class="justify-start gap-2"
+				onclick={() => openRename(fileActionsMenuItem)}
+			>
+				<LucidePencil class="size-4 shrink-0" aria-hidden="true" />
+				Rename…
+			</button>
 		</li>
 		<li role="none">
-			<button type="button" role="menuitem" onclick={() => openColorModal(fileActionsMenuItem)}
-			>Label color…</button>
+			<button
+				type="button"
+				role="menuitem"
+				class="justify-start gap-2"
+				onclick={() => openColorModal(fileActionsMenuItem)}
+			>
+				<LucidePalette class="size-4 shrink-0" aria-hidden="true" />
+				Color…
+			</button>
 		</li>
 		<li role="none">
 			<button
@@ -468,9 +615,51 @@
 	</div>
 </dialog>
 
+<dialog bind:this={shareDialogEl} class="d-modal" onclose={closeShare}>
+	<div class="d-modal-box max-w-md">
+		<h3 class="d-font-title text-lg font-bold">
+			Share {shareTarget?.itemType === 'folder' ? 'folder' : 'file'}
+		</h3>
+		{#if shareTarget}
+			<p class="text-base-content/70 py-2 text-sm">{shareTarget.name}</p>
+		{/if}
+		<label class="d-form-control mt-2 w-full">
+			<span class="d-label-text">Recipient email</span>
+			<input
+				type="email"
+				class="d-input d-input-bordered w-full"
+				bind:value={shareEmailDraft}
+				disabled={shareSubmitting}
+				placeholder="friend@example.com"
+				onkeydown={(e) => e.key === 'Enter' && void submitShare()}
+			/>
+		</label>
+		<p class="text-base-content/60 mt-2 text-xs">
+			{#if shareTarget?.itemType === 'folder'}
+				They can open this folder and its contents under Shared while logged in with that email.
+			{:else}
+				They can download the decrypted file while logged in with that email (read access).
+			{/if}
+		</p>
+		<div class="d-modal-action">
+			<form method="dialog">
+				<button type="submit" class="d-btn" disabled={shareSubmitting}>Cancel</button>
+			</form>
+			<button
+				type="button"
+				class="d-btn d-btn-primary"
+				disabled={shareSubmitting || !shareEmailDraft.trim()}
+				onclick={() => void submitShare()}
+			>
+				{shareSubmitting ? 'Sharing…' : 'Share'}
+			</button>
+		</div>
+	</div>
+</dialog>
+
 <dialog bind:this={colorDialogEl} class="d-modal" onclose={() => (colorTarget = null)}>
 	<div class="d-modal-box max-w-md">
-		<h3 class="d-font-title text-lg font-bold">Label color</h3>
+		<h3 class="d-font-title text-lg font-bold">Color</h3>
 		{#if colorTarget}
 			<p class="text-base-content/70 py-2 text-sm">{colorTarget.name}</p>
 		{/if}
@@ -486,6 +675,16 @@
 				</button>
 			{/each}
 		</div>
+		<div class="mt-3">
+			<button
+				type="button"
+				class="d-btn d-btn-ghost d-btn-sm"
+				disabled={busyId !== null || !colorTarget}
+				onclick={() => void clearItemColor()}
+			>
+				Clear color
+			</button>
+		</div>
 		<div class="d-modal-action">
 			<form method="dialog">
 				<button type="submit" class="d-btn" disabled={busyId !== null}>Close</button>
@@ -496,14 +695,34 @@
 
 {#snippet fileRowCells(item: DriveItem)}
 	<td>
-		<span class="inline-flex items-center gap-2">
-			<LucideFile class="text-base-content/60 size-5 shrink-0" aria-hidden="true" />
-			<span class="font-medium">{item.name}</span>
-		</span>
+		{#if item.itemType === 'folder'}
+			<button
+				type="button"
+				class="inline-flex min-w-0 max-w-full items-center gap-2 text-left font-medium hover:underline"
+				onclick={() => enterFolder(item)}
+			>
+				<LucideFolder
+					class="size-5 shrink-0 {fileLabelIconClass(item.color)}"
+					aria-hidden="true"
+				/>
+				<span class="truncate">{item.name}</span>
+			</button>
+		{:else}
+			<span class="inline-flex min-w-0 max-w-full items-center gap-2">
+				<LucideFile
+					class="size-5 shrink-0 {fileLabelIconClass(item.color ?? 'base')}"
+					aria-hidden="true"
+				/>
+				<span class="font-medium truncate">{item.name}</span>
+			</span>
+		{/if}
 	</td>
 	<td class="text-base-content/80 tabular-nums">{formatBytes(item.sizeBytes)}</td>
 	<td class="text-base-content/80">{item.updatedAt}</td>
 	<td class="text-sm">{storageProviderLabel(item.storageProvider)}</td>
+	<td class="text-base-content/80 max-w-[10rem] truncate text-sm" title={item.ownerName}>
+		{item.ownerName}
+	</td>
 	<td class="text-center">
 		<button
 			type="button"
@@ -529,9 +748,6 @@
 				class="size-4 {item.starred ? 'text-warning fill-warning' : 'text-base-content/30'}"
 			/>
 		</button>
-	</td>
-	<td>
-		<span class={fileLabelBadgeClass(item.color)}>{colorLabel(item.color)}</span>
 	</td>
 	<td class="text-center">
 		<button

@@ -1,16 +1,18 @@
-import { boolean, integer, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
+import type { AnyPgColumn } from 'drizzle-orm/pg-core';
+import { boolean, integer, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { MasterStorageProviderSchema } from '../master-schema/master.schema';
 import { createUpdateTimestamp, uuidSchemaWrapper } from '../schema-wrapper';
 
 export const MainFileSchema = pgTable('main_file', {
 	...uuidSchemaWrapper,
 	ownerId: text('owner_id').notNull(),
-	parentId: integer('parent_id'),
+	parentId: uuid('parent_id').references((): AnyPgColumn => MainFileSchema.id, { onDelete: 'cascade' }),
 	itemType: text('item_type').notNull().default('file'),
 	isPinned: boolean('is_pinned').notNull().default(false),
 	isStarred: boolean('is_starred').notNull().default(false),
 	trashedAt: timestamp('trashed_at', { withTimezone: true }),
-	color: text('color').notNull().default('base'),
+	/** `null` = no label tint (folders default); files often `'base'`. */
+	color: text('color'),
 	path: text('path').notNull(),
 	name: text('name').notNull(),
 	mimeType: text('mime_type').notNull(),
@@ -24,7 +26,9 @@ export const MainFileSchema = pgTable('main_file', {
 
 export const MainFileShareSchema = pgTable('main_file_share', {
 	...uuidSchemaWrapper,
-	fileId: integer('file_id').notNull(),
+	fileId: uuid('file_id')
+		.notNull()
+		.references(() => MainFileSchema.id, { onDelete: 'cascade' }),
 	ownerId: text('owner_id').notNull(),
 	targetEmail: text('target_email').notNull(),
 	permission: text('permission').notNull(),

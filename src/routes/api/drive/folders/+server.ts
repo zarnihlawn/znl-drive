@@ -1,4 +1,11 @@
 import { auth } from '$lib/server/auth';
+import { resolveParentFolderForUser } from '$lib/server/drive-parent';
+import {
+	localPathNewFolderAtRoot,
+	localPathNewSubfolder,
+	tigrisKeyNewFolderAtRoot,
+	tigrisKeyNewSubfolder
+} from '$lib/server/drive-storage-layout';
 import { db } from '$lib/server/db';
 import { MainFileSchema } from '$lib/server/db/schema/main-schema/main.schema';
 import { localUserUploadDir } from '$lib/server/local-drive-path';
@@ -6,7 +13,6 @@ import { TigrisUtil } from '$lib/service/tigris.service.svelte';
 import type { StorageProviderId } from '$lib/model/storage-provider';
 import { error, json } from '@sveltejs/kit';
 import { mkdir } from 'node:fs/promises';
-import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import type { RequestHandler } from './$types';
@@ -14,7 +20,8 @@ import type { RequestHandler } from './$types';
 const bodySchema = z
 	.object({
 		name: z.string().min(1).max(500),
-		storageProvider: z.enum(['local', 'tigris'])
+		storageProvider: z.enum(['local', 'tigris']),
+		parentId: z.string().uuid().optional()
 	})
 	.strict();
 
@@ -40,17 +47,20 @@ export const POST: RequestHandler = async ({ request }) => {
 	const name = safeFolderName(parsed.data.name);
 
 	const userId = session.user.id;
+	const parentFolder = await resolveParentFolderForUser(userId, provider, parsed.data.parentId);
 	const id = randomUUID();
 
 	if (provider === 'local') {
 		const userDir = localUserUploadDir(userId);
-		const diskPath = join(userDir, 'folder', id);
+		const diskPath = parentFolder
+			? localPathNewSubfolder(parentFolder.path, id)
+			: localPathNewFolderAtRoot(userDir, id);
 		await mkdir(diskPath, { recursive: true });
 
 		await db.insert(MainFileSchema).values({
 			id,
 			ownerId: userId,
-			parentId: null,
+			parentId: parentFolder?.id ?? null,
 			itemType: 'folder',
 			path: diskPath,
 			name,
@@ -61,10 +71,13 @@ export const POST: RequestHandler = async ({ request }) => {
 			isStarred: false,
 			trashedAt: null,
 			isEncrypted: false,
-			isCompressed: false
+			isCompressed: false,
+			color: null
 		});
 	} else {
-		const objectKey = `users/${userId}/folder/${id}/.keep`;
+		const objectKey = parentFolder
+			? tigrisKeyNewSubfolder(parentFolder.path, id)
+			: tigrisKeyNewFolderAtRoot(userId, id);
 		try {
 			await TigrisUtil.upload(objectKey, Buffer.alloc(0), { contentType: 'application/octet-stream' });
 		} catch (e) {
@@ -75,7 +88,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		await db.insert(MainFileSchema).values({
 			id,
 			ownerId: userId,
-			parentId: null,
+			parentId: parentFolder?.id ?? null,
 			itemType: 'folder',
 			path: objectKey,
 			name,
@@ -86,7 +99,8 @@ export const POST: RequestHandler = async ({ request }) => {
 			isStarred: false,
 			trashedAt: null,
 			isEncrypted: false,
-			isCompressed: false
+			isCompressed: false,
+			color: null
 		});
 	}
 

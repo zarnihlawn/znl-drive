@@ -99,9 +99,6 @@ importers:
       daisyui:
         specifier: ^5.5.19
         version: 5.5.19
-      dotenv:
-        specifier: ^17.4.0
-        version: 17.4.0
       drizzle-kit:
         specifier: ^0.31.8
         version: 0.31.10
