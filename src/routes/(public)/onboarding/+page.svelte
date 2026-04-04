@@ -8,6 +8,7 @@
 		LucideStar,
 		LucideUsers
 	} from '@lucide/svelte';
+	import { resolve } from '$app/paths';
 </script>
 
 <section class="my-20 flex flex-col gap-20">
@@ -17,8 +18,10 @@
 			<p class="my-ft-lead">a portable service that integrates into your workflow.</p>
 
 			<div class="mt-10 flex gap-5">
-				<button class="d-btn d-btn-primary">Get Started</button>
-				<button class="d-btn d-btn-outline">Host Your Own</button>
+				<a class="d-btn d-btn-primary" href={resolve('/(private)/home')}>Get Started</a>
+				<a class="d-btn d-btn-outline" href="https://github.com/zarnihlawn/znl-drive"
+					>Host Your Own</a
+				>
 			</div>
 		</div>
 		<div>

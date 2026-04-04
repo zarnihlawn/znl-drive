@@ -12,4 +12,3 @@ export type MainFileShareSchemaUpdateType = Partial<MainFileShareSchemaInsertTyp
 export type MainFileActivitySchemaType = InferSelectModel<typeof MainFileActivitySchema>;
 export type MainFileActivitySchemaInsertType = InferInsertModel<typeof MainFileActivitySchema>;
 export type MainFileActivitySchemaUpdateType = Partial<MainFileActivitySchemaInsertType>;
-

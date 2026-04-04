@@ -2,9 +2,17 @@ import { pgEnum } from 'drizzle-orm/pg-core';
 
 export const MasterItemTypeSchema = pgEnum('master_item_type', ['file', 'folder']);
 
-export const MasterFilePermissionSchema = pgEnum('master_file_permission', ['read', 'write', 'admin']);
+export const MasterFilePermissionSchema = pgEnum('master_file_permission', [
+	'read',
+	'write',
+	'admin'
+]);
 
-export const MasterFileActionSchema = pgEnum('master_file_action', ['upload', 'download', 'access']);
+export const MasterFileActionSchema = pgEnum('master_file_action', [
+	'upload',
+	'download',
+	'access'
+]);
 
 export const MasterFileTypeSchema = pgEnum('master_file_type', [
 	'image',
@@ -16,7 +24,7 @@ export const MasterFileTypeSchema = pgEnum('master_file_type', [
 
 export const MasterFileExtensionSchema = pgEnum('master_file_extension', [
 	'jpg',
-  'zip',
+	'zip',
 	'jpeg',
 	'png',
 	'gif',

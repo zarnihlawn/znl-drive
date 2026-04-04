@@ -11,5 +11,5 @@ export const DeveloperApiKeySchema = pgTable('developer_api_key', {
 	isRevoked: boolean('is_revoked').notNull().default(false),
 	lastUsedAt: timestamp('last_used_at', { withTimezone: true }),
 	revokedAt: timestamp('revoked_at', { withTimezone: true }),
-  ...createUpdateTimestamp
+	...createUpdateTimestamp
 });

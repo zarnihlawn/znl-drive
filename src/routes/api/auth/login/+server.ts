@@ -1,5 +1,5 @@
 import { LoginBodyEmailInterface } from '$lib/model/interface/auth.interface';
-import { logInWithEmailAndPassword } from '$lib/remote/auth/login.remote';
+import { logInWithEmailAndPassword } from '$lib/remote/auth-remote/login.remote';
 import { redirect, error } from '@sveltejs/kit';
 import { resolve } from '$app/paths';
 import type { RequestHandler } from '@sveltejs/kit';

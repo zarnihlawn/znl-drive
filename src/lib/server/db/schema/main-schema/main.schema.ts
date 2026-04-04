@@ -1,4 +1,5 @@
 import { boolean, integer, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
+import { MasterStorageProviderSchema } from '../master-schema/master.schema';
 import { createUpdateTimestamp, uuidSchemaWrapper } from '../schema-wrapper';
 
 export const MainFileSchema = pgTable('main_file', {
@@ -14,7 +15,8 @@ export const MainFileSchema = pgTable('main_file', {
 	name: text('name').notNull(),
 	mimeType: text('mime_type').notNull(),
 	sizeBytes: integer('size_bytes').notNull(),
-	storageProvider: text('storage_provider').notNull(),
+	/** Postgres enum `master_storage_provider` — ties each object to a backend (local vs Tigris, etc.). */
+	storageProvider: MasterStorageProviderSchema('storage_provider').notNull().default('local'),
 	isEncrypted: boolean('is_encrypted').notNull().default(true),
 	isCompressed: boolean('is_compressed').notNull().default(true),
 	...createUpdateTimestamp

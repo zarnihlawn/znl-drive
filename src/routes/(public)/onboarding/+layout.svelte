@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { daisyDropdown } from '$lib/actions/daisy-dropdown';
 	import { LucideCircleUser, LucideCloudUpload, LucideMenu } from '@lucide/svelte';
 	import { resolve } from '$app/paths';
 	import { SiGithub } from '@icons-pack/svelte-simple-icons';
@@ -13,13 +14,13 @@
 <div class="my-web">
 	<div class="d-navbar bg-base-100 shadow-sm">
 		<div class="d-navbar-start">
-			<div class="d-dropdown">
-				<div tabindex="0" role="button" class="d-btn d-btn-ghost lg:hidden">
+			<div class="d-dropdown" use:daisyDropdown>
+				<div tabindex="0" role="button" class="d-btn d-btn-ghost m-1 lg:hidden">
 					<LucideMenu class="h-5 w-5" />
 				</div>
 				<ul
 					tabindex="-1"
-					class="d-dropdown-content d-menu z-1 mt-3 w-52 d-menu-sm rounded-box bg-base-100 p-2 shadow"
+					class="d-dropdown-content d-menu bg-base-100 rounded-box z-1 mt-1 w-52 p-2 shadow-sm"
 				>
 					<li><a href={resolve('/(public)/onboarding/docs')}>Docs</a></li>
 					<li><a href={resolve('/(public)/onboarding/blogs')}>Blogs</a></li>
