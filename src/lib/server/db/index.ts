@@ -3,8 +3,9 @@ import { neon } from '@neondatabase/serverless';
 import * as schema from './schema';
 import { env } from '$env/dynamic/private';
 
-/** Only for module init when env is missing (e.g. Docker build); runtime must set DATABASE_URL. */
-const PLACEHOLDER_DATABASE_URL = 'postgresql://127.0.0.1:5432/postgres';
+/** Only for module init when env is missing (e.g. Docker build). `neon()` requires user@host/path — see @neondatabase/serverless validation. */
+const PLACEHOLDER_DATABASE_URL =
+	'postgresql://build:build@placeholder.invalid/postgres';
 
 const databaseUrl = env.DATABASE_URL;
 if (!databaseUrl) {
