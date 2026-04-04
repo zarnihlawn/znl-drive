@@ -1,5 +1,5 @@
-import { auth } from '$lib/server/auth';
 import { appendChunk, readAssembled, removeSession } from '$lib/server/drive-upload-chunk-store';
+import { requireApiSession } from '$lib/server/require-api-session';
 import { persistSealedUpload } from '$lib/server/drive-upload-persist';
 import { STORAGE_PROVIDERS, type StorageProviderId } from '$lib/model/storage-provider';
 import { error, json } from '@sveltejs/kit';
@@ -9,8 +9,7 @@ import type { RequestHandler } from './$types';
 const MAX_BYTES = 100 * 1024 * 1024;
 
 export const POST: RequestHandler = async ({ request }) => {
-	const session = await auth.api.getSession({ headers: request.headers });
-	if (!session?.user) throw error(401, 'Unauthorized');
+	const session = await requireApiSession(request);
 
 	const formData = await request.formData();
 	const chunkIndex = Number(formData.get('chunkIndex'));

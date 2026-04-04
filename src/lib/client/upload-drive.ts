@@ -1,4 +1,5 @@
 import { base } from '$app/paths';
+import { redirectToLoginSessionExpired } from '$lib/client/fetch-session';
 import type { StorageProviderId } from '$lib/model/storage-provider';
 
 /** Use multipart chunking above this size (bytes). */
@@ -18,6 +19,11 @@ function postChunk(
 			}
 		});
 		xhr.addEventListener('load', () => {
+			if (xhr.status === 401) {
+				redirectToLoginSessionExpired();
+				reject(new Error('Session expired. Sign in again.'));
+				return;
+			}
 			if (xhr.status >= 200 && xhr.status < 300) {
 				try {
 					resolve(JSON.parse(xhr.responseText || '{}'));
@@ -42,6 +48,11 @@ function postMultipart(fd: FormData, onProgress: (loaded: number, total: number)
 			if (e.lengthComputable) onProgress(e.loaded, e.total);
 		});
 		xhr.addEventListener('load', () => {
+			if (xhr.status === 401) {
+				redirectToLoginSessionExpired();
+				reject(new Error('Session expired. Sign in again.'));
+				return;
+			}
 			if (xhr.status >= 200 && xhr.status < 300) {
 				try {
 					resolve(JSON.parse(xhr.responseText || '{}'));

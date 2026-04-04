@@ -17,6 +17,7 @@
 	let password = $state('');
 	let isPasswordVisible = $state(false);
 	let showResetSuccess = $state(false);
+	let showSessionExpired = $state(false);
 	let socialError = $state<string | null>(null);
 
 	type SocialProvider = 'github' | 'google';
@@ -53,6 +54,7 @@
 	onMount(() => {
 		const params = new URLSearchParams(window.location.search);
 		showResetSuccess = params.get('reset') === '1';
+		showSessionExpired = params.get('reason') === 'session';
 	});
 </script>
 
@@ -81,6 +83,11 @@
 				<legend class="my-ft-h1 d-fieldset-legend">LOGIN</legend>
 				<!-- Email Login -->
 				<form action={resolve(`/api/auth/login`)} method="POST" class="flex flex-col gap-5">
+					{#if showSessionExpired}
+						<div class="d-alert d-alert-warning">
+							<span>Your session expired. Sign in again to continue.</span>
+						</div>
+					{/if}
 					{#if showResetSuccess}
 						<div class="d-alert d-alert-success">
 							<span>Password reset successful. Please log in.</span>

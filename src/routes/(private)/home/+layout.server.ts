@@ -21,6 +21,7 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 	const rel = pathWithoutBase(url.pathname);
 	const isHomeFilesPage = rel === '/home';
 	const isSharedPage = rel === '/home/shared';
+	const isTrashPage = rel === '/home/trash';
 
 	const folderParam = url.searchParams.get('folder');
 	let currentFolder: {
@@ -114,6 +115,7 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 	return {
 		user: locals.user ?? null,
 		currentFolder,
-		sharedView: isSharedPage
+		sharedView: isSharedPage,
+		trashView: isTrashPage
 	};
 };

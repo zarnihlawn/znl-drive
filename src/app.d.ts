@@ -7,6 +7,8 @@ declare global {
 		interface Locals {
 			user?: User;
 			session?: Session;
+			/** True when `getSession` failed (e.g. database unreachable). Private layouts may surface 503. */
+			authUnavailable?: boolean;
 		}
 
 		// interface Error {}

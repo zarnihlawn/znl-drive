@@ -70,3 +70,52 @@ export async function sumSubtreeFileBytesForFolderRows(
 	for (const [id, n] of pairs) map.set(id, n);
 	return map;
 }
+
+/**
+ * Sum of `size_bytes` for all descendant **files** under `folderId` (any trash state).
+ * Used for trashed folder rows where children may or may not have `trashed_at` set.
+ */
+export async function sumSubtreeFileBytesForFolderOwnerTree(
+	folderId: string,
+	ownerId: string,
+	storageProvider: StorageProviderId
+): Promise<number> {
+	const result = (await db.execute(sql`
+		WITH RECURSIVE sub AS (
+			SELECT id
+			FROM main_file
+			WHERE id = ${folderId}::uuid
+				AND owner_id = ${ownerId}
+				AND storage_provider = ${storageProvider}
+			UNION ALL
+			SELECT m.id
+			FROM main_file m
+			INNER JOIN sub s ON m.parent_id = s.id
+			WHERE m.owner_id = ${ownerId}
+				AND m.storage_provider = ${storageProvider}
+		)
+		SELECT COALESCE(SUM(m.size_bytes), 0)::bigint AS total
+		FROM main_file m
+		WHERE m.item_type = 'file'
+			AND m.id IN (SELECT id FROM sub)
+	`)) as unknown as { rows: Array<{ total: string | bigint | number }> };
+	const v = result.rows[0]?.total;
+	if (v === undefined || v === null) return 0;
+	return typeof v === 'bigint' ? Number(v) : Number(v);
+}
+
+/** Batch sizes for trashed folder rows. */
+export async function sumSubtreeFileBytesForTrashedFolderRows(
+	folders: { id: string; ownerId: string; storageProvider: StorageProviderId }[]
+): Promise<Map<string, number>> {
+	const map = new Map<string, number>();
+	if (folders.length === 0) return map;
+	const pairs = await Promise.all(
+		folders.map(async (f) => {
+			const n = await sumSubtreeFileBytesForFolderOwnerTree(f.id, f.ownerId, f.storageProvider);
+			return [f.id, n] as const;
+		})
+	);
+	for (const [id, n] of pairs) map.set(id, n);
+	return map;
+}

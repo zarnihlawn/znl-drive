@@ -1,5 +1,5 @@
-import { auth } from '$lib/server/auth';
 import { canAccessSharedItem, sharedRootIdsForRecipient } from '$lib/server/drive-shared-access';
+import { requireApiSession } from '$lib/server/require-api-session';
 import { sumSubtreeFileBytesForFolderRows } from '$lib/server/drive-folder-size';
 import { db } from '$lib/server/db';
 import { AuthUserSchema } from '$lib/server/db/schema/auth-schema/auth.schema';
@@ -16,8 +16,7 @@ function ownerDisplayName(name: string | null | undefined, email: string): strin
 }
 
 export const GET: RequestHandler = async ({ request, url }) => {
-	const session = await auth.api.getSession({ headers: request.headers });
-	if (!session?.user) throw error(401, 'Unauthorized');
+	const session = await requireApiSession(request);
 
 	const email = session.user.email?.trim().toLowerCase();
 	if (!email) throw error(400, 'Account has no email; sharing requires an email address');

@@ -2,7 +2,7 @@ import { sequence } from '@sveltejs/kit/hooks';
 import { building } from '$app/environment';
 import { auth } from '$lib/server/auth';
 import { isAuthPath } from 'better-auth/svelte-kit';
-import type { Handle } from '@sveltejs/kit';
+import type { Handle, HandleServerError } from '@sveltejs/kit';
 import { getTextDirection } from '$lib/paraglide/runtime';
 import { paraglideMiddleware } from '$lib/paraglide/server';
 
@@ -45,11 +45,16 @@ const handleParaglide: Handle = ({ event, resolve }) =>
 	});
 
 const handleBetterAuth: Handle = async ({ event, resolve }) => {
-	const session = await auth.api.getSession({ headers: event.request.headers });
+	try {
+		const session = await auth.api.getSession({ headers: event.request.headers });
 
-	if (session) {
-		event.locals.session = session.session;
-		event.locals.user = session.user;
+		if (session) {
+			event.locals.session = session.session;
+			event.locals.user = session.user;
+		}
+	} catch (e) {
+		console.error('[hooks] getSession failed (database or auth unavailable)', e);
+		event.locals.authUnavailable = true;
 	}
 
 	if (building) {
@@ -68,3 +73,22 @@ const handleBetterAuth: Handle = async ({ event, resolve }) => {
 };
 
 export const handle: Handle = sequence(handleFavicon, handleParaglide, handleBetterAuth);
+
+export const handleError: HandleServerError = ({ error, event, status, message }) => {
+	const path = event.url.pathname;
+	const err = error instanceof Error ? error : null;
+	if (import.meta.env.DEV) {
+		console.error('[handleError]', status, path, err ?? message);
+	} else {
+		console.error('[handleError]', status, path);
+	}
+	const safe =
+		status === 404
+			? (typeof message === 'string' && message ? message : 'This page could not be found.')
+			: status === 503
+				? 'Service temporarily unavailable. Please try again in a moment.'
+				: 'Something went wrong. Please try again.';
+	return {
+		message: import.meta.env.DEV && err?.message ? err.message : safe
+	};
+};

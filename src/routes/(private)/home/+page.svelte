@@ -2,6 +2,7 @@
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { base, resolve } from '$app/paths';
+	import { fetchWithSession } from '$lib/client/fetch-session';
 	import { page } from '$app/state';
 	import {
 		downloadDriveFileAsBlob,
@@ -191,7 +192,7 @@
 				storageProvider: driveStorage.current
 			});
 			if (folderId) qs.set('parentId', folderId);
-			const r = await fetch(`${base}/api/drive/files?${qs}`, { credentials: 'include' });
+			const r = await fetchWithSession(`${base}/api/drive/files?${qs}`);
 			if (!r.ok) {
 				const t = await r.text();
 				throw new Error(t || r.statusText);
@@ -323,7 +324,9 @@
 	async function onDownloadFile(item: DriveItem) {
 		closeFileActionsMenu();
 		try {
-			await downloadDriveFileAsBlob(item.id, item.name);
+			const fallback =
+				item.itemType === 'folder' ? `${item.name}.zip` : item.name;
+			await downloadDriveFileAsBlob(item.id, fallback);
 		} catch (e) {
 			toastService.addToast(e instanceof Error ? e.message : 'Download failed', StatusColorEnum.ERROR);
 		}
@@ -522,7 +525,7 @@
 		class="d-menu bg-base-100 fixed z-[999] m-0 w-52 rounded-box border border-base-200 p-2 shadow-md"
 		style="top: {fileActionsMenuPosition.top}px; left: {fileActionsMenuPosition.left}px;"
 	>
-		{#if fileActionsMenuItem.itemType === 'file'}
+		{#if fileActionsMenuItem.itemType === 'file' || fileActionsMenuItem.itemType === 'folder'}
 			<li role="none">
 				<button
 					type="button"
@@ -531,7 +534,7 @@
 					onclick={() => void onDownloadFile(fileActionsMenuItem)}
 				>
 					<LucideDownload class="size-4 shrink-0" aria-hidden="true" />
-					Download
+					{fileActionsMenuItem.itemType === 'folder' ? 'Download as ZIP' : 'Download'}
 				</button>
 			</li>
 		{/if}

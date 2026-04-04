@@ -1,4 +1,5 @@
-import { auth } from '$lib/server/auth';
+import { permanentDeleteTrashedItem } from '$lib/server/drive-permanent-delete';
+import { requireApiSession } from '$lib/server/require-api-session';
 import { db } from '$lib/server/db';
 import { MainFileSchema } from '$lib/server/db/schema/main-schema/main.schema';
 import { FILE_LABEL_COLORS, type FileLabelColorId } from '$lib/model/file-label-color';
@@ -25,8 +26,7 @@ function sanitizeFileName(name: string): string {
 }
 
 export const PATCH: RequestHandler = async ({ request, params }) => {
-	const session = await auth.api.getSession({ headers: request.headers });
-	if (!session?.user) throw error(401, 'Unauthorized');
+	const session = await requireApiSession(request);
 
 	const id = params.id;
 	if (!id) throw error(400, 'Missing id');
@@ -66,6 +66,34 @@ export const PATCH: RequestHandler = async ({ request, params }) => {
 	}
 
 	await db.update(MainFileSchema).set(updates).where(eq(MainFileSchema.id, id));
+
+	return json({ ok: true });
+};
+
+export const DELETE: RequestHandler = async ({ request, params }) => {
+	const session = await requireApiSession(request);
+
+	const id = params.id;
+	if (!id) throw error(400, 'Missing id');
+
+	const [row] = await db
+		.select({
+			id: MainFileSchema.id,
+			trashedAt: MainFileSchema.trashedAt
+		})
+		.from(MainFileSchema)
+		.where(and(eq(MainFileSchema.id, id), eq(MainFileSchema.ownerId, session.user.id)))
+		.limit(1);
+
+	if (!row) throw error(404, 'Not found');
+	if (!row.trashedAt) throw error(400, 'Only items in trash can be permanently deleted');
+
+	try {
+		await permanentDeleteTrashedItem(session.user.id, id);
+	} catch (e) {
+		console.error('[drive/files] permanent delete failed', e);
+		throw error(500, 'Failed to delete permanently');
+	}
 
 	return json({ ok: true });
 };

@@ -1,5 +1,5 @@
-import { auth } from '$lib/server/auth';
 import { persistSealedUpload, safeUploadFileName } from '$lib/server/drive-upload-persist';
+import { requireApiSession } from '$lib/server/require-api-session';
 import { STORAGE_PROVIDERS, type StorageProviderId } from '$lib/model/storage-provider';
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
@@ -10,8 +10,7 @@ const MAX_BYTES = 100 * 1024 * 1024;
  * Multipart upload (small files / multi-file). Large files use `POST /api/drive/upload/chunk`.
  */
 export const POST: RequestHandler = async ({ request }) => {
-	const session = await auth.api.getSession({ headers: request.headers });
-	if (!session?.user) throw error(401, 'Unauthorized');
+	const session = await requireApiSession(request);
 
 	const formData = await request.formData();
 	const providerRaw = String(formData.get('storageProvider') ?? 'local');

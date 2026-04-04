@@ -1,6 +1,8 @@
-import { auth } from '$lib/server/auth';
+import { buildFolderZipBuffer } from '$lib/server/drive-folder-zip';
 import { openFileBuffer } from '$lib/server/drive-seal';
+import { requireApiSession } from '$lib/server/require-api-session';
 import { readStoredBlob } from '$lib/server/drive-load';
+import { canAccessSharedItem, sharedRootIdsForRecipient } from '$lib/server/drive-shared-access';
 import { db } from '$lib/server/db';
 import { MainFileSchema, MainFileShareSchema } from '$lib/server/db/schema/main-schema/main.schema';
 import { error } from '@sveltejs/kit';
@@ -13,9 +15,13 @@ function contentDisposition(filename: string): string {
 	return `attachment; filename="${safe}"; filename*=UTF-8''${encoded}`;
 }
 
+function zipAttachmentName(folderName: string): string {
+	const base = folderName.replace(/[/\\]/g, '_').trim() || 'folder';
+	return `${base}.zip`;
+}
+
 export const GET: RequestHandler = async ({ request, params }) => {
-	const session = await auth.api.getSession({ headers: request.headers });
-	if (!session?.user) throw error(401, 'Unauthorized');
+	const session = await requireApiSession(request);
 
 	const id = params.id;
 	if (!id) throw error(400, 'Missing id');
@@ -28,27 +34,45 @@ export const GET: RequestHandler = async ({ request, params }) => {
 
 	if (!row) throw error(404, 'Not found');
 
-	if (row.itemType === 'folder') {
-		throw error(400, 'Folders cannot be downloaded');
-	}
-
 	let allowed = row.ownerId === session.user.id;
 
 	if (!allowed && session.user.email) {
+		const email = session.user.email.toLowerCase();
 		const [share] = await db
 			.select({ id: MainFileShareSchema.id })
 			.from(MainFileShareSchema)
 			.where(
-				and(
-					eq(MainFileShareSchema.fileId, id),
-					eq(MainFileShareSchema.targetEmail, session.user.email.toLowerCase())
-				)
+				and(eq(MainFileShareSchema.fileId, id), eq(MainFileShareSchema.targetEmail, email))
 			)
 			.limit(1);
-		allowed = !!share;
+		if (share) {
+			allowed = true;
+		} else {
+			const roots = await sharedRootIdsForRecipient(email);
+			allowed = await canAccessSharedItem(email, id, roots);
+		}
 	}
 
 	if (!allowed) throw error(403, 'Forbidden');
+
+	if (row.itemType === 'folder') {
+		let buf: Buffer;
+		try {
+			buf = await buildFolderZipBuffer(id);
+		} catch (e) {
+			console.error('[download] folder zip failed', e);
+			throw error(500, 'Failed to build archive');
+		}
+		const zipName = zipAttachmentName(row.name);
+		return new Response(new Uint8Array(buf), {
+			headers: {
+				'Content-Type': 'application/zip',
+				'Content-Disposition': contentDisposition(zipName),
+				'Content-Length': String(buf.length),
+				'Cache-Control': 'private, no-store'
+			}
+		});
+	}
 
 	let stored: Buffer;
 	try {

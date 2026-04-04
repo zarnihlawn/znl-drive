@@ -2,6 +2,7 @@
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { base, resolve } from '$app/paths';
+	import { fetchWithSession } from '$lib/client/fetch-session';
 	import { page } from '$app/state';
 	import { downloadDriveFileAsBlob } from '$lib/client/drive-file';
 	import {
@@ -86,7 +87,7 @@
 				storageProvider: driveStorage.current
 			});
 			if (folderId) qs.set('folder', folderId);
-			const r = await fetch(`${base}/api/drive/shared?${qs}`, { credentials: 'include' });
+			const r = await fetchWithSession(`${base}/api/drive/shared?${qs}`);
 			if (!r.ok) {
 				const t = await r.text();
 				throw new Error(t || r.statusText);
@@ -117,11 +118,11 @@
 		return cf.upHref;
 	});
 
-	async function onDownloadFile(item: DriveItem) {
-		if (item.itemType !== 'file') return;
+	async function onDownloadItem(item: DriveItem) {
 		busyId = item.id;
 		try {
-			await downloadDriveFileAsBlob(item.id, item.name);
+			const fallback = item.itemType === 'folder' ? `${item.name}.zip` : item.name;
+			await downloadDriveFileAsBlob(item.id, fallback);
 		} catch (e) {
 			toastService.addToast(e instanceof Error ? e.message : 'Download failed', StatusColorEnum.ERROR);
 		} finally {
@@ -133,7 +134,7 @@
 <div class="flex min-h-0 flex-1 flex-col gap-6 pb-8">
 	<p class="text-base-content/70 shrink-0 text-sm">
 		Files and folders others shared with your account appear here. Open folders to browse what you can access;
-		download files when you have access. Storage column shows where the owner stored the item.
+		download files or folders (as ZIP) when you have access. Storage column shows where the owner stored the item.
 	</p>
 
 	{#if loading && rows.length === 0}
@@ -214,19 +215,17 @@
 										{item.ownerName}
 									</td>
 									<td class="text-center">
-										{#if item.itemType === 'file'}
-											<button
-												type="button"
-												class="d-btn d-btn-ghost d-btn-sm d-btn-square"
-												aria-label="Download {item.name}"
-												disabled={busyId === item.id}
-												onclick={() => void onDownloadFile(item)}
-											>
-												<LucideDownload class="size-4" />
-											</button>
-										{:else}
-											<span class="text-base-content/30">—</span>
-										{/if}
+										<button
+											type="button"
+											class="d-btn d-btn-ghost d-btn-sm d-btn-square"
+											aria-label={item.itemType === 'folder'
+												? `Download ${item.name} as ZIP`
+												: `Download ${item.name}`}
+											disabled={busyId === item.id}
+											onclick={() => void onDownloadItem(item)}
+										>
+											<LucideDownload class="size-4" />
+										</button>
 									</td>
 								</tr>
 							{/each}

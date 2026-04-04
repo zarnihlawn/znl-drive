@@ -1,5 +1,5 @@
-import { auth } from '$lib/server/auth';
 import { db } from '$lib/server/db';
+import { requireApiSession } from '$lib/server/require-api-session';
 import { MainFileSchema, MainFileShareSchema } from '$lib/server/db/schema/main-schema/main.schema';
 import { error, json } from '@sveltejs/kit';
 import { and, eq, isNull } from 'drizzle-orm';
@@ -15,8 +15,7 @@ const bodySchema = z
 	.strict();
 
 export const POST: RequestHandler = async ({ request, params }) => {
-	const session = await auth.api.getSession({ headers: request.headers });
-	if (!session?.user) throw error(401, 'Unauthorized');
+	const session = await requireApiSession(request);
 
 	const id = params.id;
 	if (!id) throw error(400, 'Missing id');

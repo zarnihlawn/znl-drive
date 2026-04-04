@@ -1,12 +1,12 @@
-import { sumSubtreeFileBytesForFolders } from '$lib/server/drive-folder-size';
+import { TRASH_RETENTION_DAYS } from '$lib/server/drive-trash-constants';
 import { requireApiSession } from '$lib/server/require-api-session';
+import { sumSubtreeFileBytesForTrashedFolderRows } from '$lib/server/drive-folder-size';
 import { db } from '$lib/server/db';
 import { AuthUserSchema } from '$lib/server/db/schema/auth-schema/auth.schema';
 import { MainFileSchema } from '$lib/server/db/schema/main-schema/main.schema';
 import { STORAGE_PROVIDERS, type StorageProviderId } from '$lib/model/storage-provider';
 import { error, json } from '@sveltejs/kit';
-import { and, eq, isNull } from 'drizzle-orm';
-import { z } from 'zod';
+import { and, desc, eq, isNotNull } from 'drizzle-orm';
 import type { RequestHandler } from './$types';
 
 function ownerDisplayName(name: string | null | undefined, email: string): string {
@@ -23,23 +23,15 @@ export const GET: RequestHandler = async ({ request, url }) => {
 	}
 	const storageProvider = raw as StorageProviderId;
 
-	const parentParam = url.searchParams.get('parentId') ?? url.searchParams.get('folder');
-	let parentFilter;
-	if (parentParam && parentParam.trim() !== '') {
-		const parsed = z.string().uuid().safeParse(parentParam.trim());
-		if (!parsed.success) throw error(400, 'Invalid folder id');
-		parentFilter = eq(MainFileSchema.parentId, parsed.data);
-	} else {
-		parentFilter = isNull(MainFileSchema.parentId);
-	}
-
 	const rows = await db
 		.select({
 			id: MainFileSchema.id,
+			ownerId: MainFileSchema.ownerId,
 			name: MainFileSchema.name,
 			itemType: MainFileSchema.itemType,
 			sizeBytes: MainFileSchema.sizeBytes,
 			updatedAt: MainFileSchema.updatedAt,
+			trashedAt: MainFileSchema.trashedAt,
 			storageProvider: MainFileSchema.storageProvider,
 			isPinned: MainFileSchema.isPinned,
 			isStarred: MainFileSchema.isStarred,
@@ -54,31 +46,40 @@ export const GET: RequestHandler = async ({ request, url }) => {
 			and(
 				eq(MainFileSchema.ownerId, session.user.id),
 				eq(MainFileSchema.storageProvider, storageProvider),
-				isNull(MainFileSchema.trashedAt),
-				parentFilter
+				isNotNull(MainFileSchema.trashedAt)
 			)
-		);
+		)
+		.orderBy(desc(MainFileSchema.trashedAt));
 
-	const folderIds = rows.filter((r) => r.itemType === 'folder').map((r) => r.id);
-	const subtreeBytes = await sumSubtreeFileBytesForFolders(
-		folderIds,
-		session.user.id,
-		storageProvider
+	const folderRows = rows.filter((r) => r.itemType === 'folder');
+	const subtreeBytes = await sumSubtreeFileBytesForTrashedFolderRows(
+		folderRows.map((r) => ({
+			id: r.id,
+			ownerId: r.ownerId,
+			storageProvider: r.storageProvider
+		}))
 	);
 
 	return json({
-		files: rows.map((r) => ({
-			id: r.id,
-			name: r.name,
-			itemType: r.itemType,
-			sizeBytes: r.itemType === 'folder' ? (subtreeBytes.get(r.id) ?? 0) : r.sizeBytes,
-			updatedAt: r.updatedAt.toISOString(),
-			storageProvider: r.storageProvider,
-			isPinned: r.isPinned,
-			isStarred: r.isStarred,
-			color: r.color,
-			parentId: r.parentId ?? null,
-			ownerName: ownerDisplayName(r.ownerName, r.ownerEmail)
-		}))
+		trashRetentionDays: TRASH_RETENTION_DAYS,
+		files: rows.map((r) => {
+			const trashedAt = r.trashedAt!;
+			const purgeAt = new Date(trashedAt.getTime() + TRASH_RETENTION_DAYS * 24 * 60 * 60 * 1000);
+			return {
+				id: r.id,
+				name: r.name,
+				itemType: r.itemType,
+				sizeBytes: r.itemType === 'folder' ? (subtreeBytes.get(r.id) ?? 0) : r.sizeBytes,
+				updatedAt: r.updatedAt.toISOString(),
+				trashedAt: trashedAt.toISOString(),
+				purgeAt: purgeAt.toISOString(),
+				storageProvider: r.storageProvider,
+				isPinned: r.isPinned,
+				isStarred: r.isStarred,
+				color: r.color,
+				parentId: r.parentId ?? null,
+				ownerName: ownerDisplayName(r.ownerName, r.ownerEmail)
+			};
+		})
 	});
 };

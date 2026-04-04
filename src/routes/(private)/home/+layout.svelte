@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { fetchWithSession } from '$lib/client/fetch-session';
 	import { page } from '$app/state';
 	import { daisyDropdown } from '$lib/actions/daisy-dropdown';
 	import { uploadFilesWithProgress } from '$lib/client/upload-drive';
@@ -73,9 +74,8 @@
 		}
 		creatingFolder = true;
 		try {
-			const r = await fetch(resolve('/api/drive/folders'), {
+			const r = await fetchWithSession(resolve('/api/drive/folders'), {
 				method: 'POST',
-				credentials: 'include',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({
 					name,
@@ -142,6 +142,9 @@
 	}
 
 	const breadcrumbs = $derived.by((): BreadcrumbItem[] => {
+		if (data.trashView) {
+			return [{ href: null, label: 'Trash', isLast: true }];
+		}
 		if (data.sharedView) {
 			if (data.currentFolder) {
 				return [
@@ -169,12 +172,16 @@
 	});
 
 	const upFolderHref = $derived.by(() => {
-		if (!data.currentFolder) return data.sharedView ? resolve('/home/shared') : resolve('/home');
+		if (!data.currentFolder) {
+			if (data.trashView) return resolve('/home/trash');
+			return data.sharedView ? resolve('/home/shared') : resolve('/home');
+		}
 		return data.currentFolder.upHref;
 	});
 
 	/** Heading: current folder name or last URL segment. */
 	const pageTitle = $derived.by(() => {
+		if (data.trashView) return 'Trash';
 		if (data.sharedView) return data.currentFolder?.name ?? 'Shared';
 		if (data.currentFolder) return data.currentFolder.name;
 		const segments = page.url.pathname.split('/').filter(Boolean);
@@ -182,6 +189,15 @@
 		if (!last) return 'Home';
 		return formatBreadcrumbLabel(last);
 	});
+
+	const newActionsDisabled = $derived(Boolean(data.sharedView || data.trashView));
+	const newActionsTooltip = $derived(
+		data.trashView
+			? 'New folders and uploads are only available in Home, not in Trash.'
+			: data.sharedView
+				? 'New folders and uploads are only available in Home, not in Shared.'
+				: ''
+	);
 </script>
 
 <div class="my-app flex min-h-screen flex-col">
@@ -240,31 +256,43 @@
 		<div class="flex min-h-0 flex-1 px-5 py-5">
 			<!-- Sidebar -->
 			<aside class="flex h-full w-64 shrink-0 flex-col">
-				<!-- NEW: folder or upload (not on Shared with me) -->
-				{#if !data.sharedView}
-				<div class="d-dropdown d-dropdown-bottom w-full" use:daisyDropdown>
-					<div tabindex="0" role="button" class="d-btn d-btn-wide d-btn-primary m-1 w-full max-w-full">
-						<LucidePlus class="size-4 shrink-0" aria-hidden="true" />
-						NEW
+				<!-- NEW: folder or upload (disabled on Shared / Trash with tooltip) -->
+				{#if newActionsDisabled}
+					<div class="d-tooltip d-tooltip-bottom w-full" data-tip={newActionsTooltip}>
+						<button
+							type="button"
+							class="d-btn d-btn-wide d-btn-primary m-1 w-full max-w-full cursor-not-allowed opacity-50"
+							disabled
+						>
+							<LucidePlus class="size-4 shrink-0" aria-hidden="true" />
+							NEW
+						</button>
 					</div>
-					<ul
-						tabindex="-1"
-						class="d-dropdown-content d-menu bg-base-100 rounded-box z-1 mt-1 w-full min-w-[12rem] max-w-full p-2 shadow-sm"
-					>
-						<li>
-							<button type="button" class="w-full justify-start gap-2" onclick={openNewFolderDialog}>
-								<LucideFolderPlus class="size-4 shrink-0" aria-hidden="true" />
-								New folder
-							</button>
-						</li>
-						<li>
-							<button type="button" class="w-full justify-start gap-2" onclick={openUploadDialogFromMenu}>
-								<LucideUpload class="size-4 shrink-0" aria-hidden="true" />
-								Upload file
-							</button>
-						</li>
-					</ul>
-				</div>
+				{:else}
+					<div class="d-dropdown d-dropdown-bottom w-full" use:daisyDropdown>
+						<div tabindex="0" role="button" class="d-btn d-btn-wide d-btn-primary m-1 w-full max-w-full">
+							<LucidePlus class="size-4 shrink-0" aria-hidden="true" />
+							NEW
+						</div>
+						<ul
+							tabindex="-1"
+							class="d-dropdown-content d-menu bg-base-100 rounded-box z-1 mt-1 w-full min-w-[12rem] max-w-full p-2 shadow-sm"
+						>
+							<li>
+								<button type="button" class="w-full justify-start gap-2" onclick={openNewFolderDialog}>
+									<LucideFolderPlus class="size-4 shrink-0" aria-hidden="true" />
+									New folder
+								</button>
+							</li>
+							<li>
+								<button type="button" class="w-full justify-start gap-2" onclick={openUploadDialogFromMenu}>
+									<LucideUpload class="size-4 shrink-0" aria-hidden="true" />
+									Upload file
+								</button>
+							</li>
+						</ul>
+					</div>
+				{/if}
 
 				<dialog bind:this={uploadDialog} class="d-modal">
 					<div class="d-modal-box max-w-lg">
@@ -337,7 +365,6 @@
 						</div>
 					</div>
 				</dialog>
-				{/if}
 
 				<span class="d-divider"></span>
 

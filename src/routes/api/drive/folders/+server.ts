@@ -1,5 +1,5 @@
-import { auth } from '$lib/server/auth';
 import { resolveParentFolderForUser } from '$lib/server/drive-parent';
+import { requireApiSession } from '$lib/server/require-api-session';
 import {
 	localPathNewFolderAtRoot,
 	localPathNewSubfolder,
@@ -31,8 +31,7 @@ function safeFolderName(name: string): string {
 }
 
 export const POST: RequestHandler = async ({ request }) => {
-	const session = await auth.api.getSession({ headers: request.headers });
-	if (!session?.user) throw error(401, 'Unauthorized');
+	const session = await requireApiSession(request);
 
 	let raw: unknown;
 	try {
