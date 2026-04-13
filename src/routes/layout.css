@@ -1,4 +1,10 @@
 @import 'tailwindcss';
+
+/* Base rem scale (overridden early in app.html via --app-font-scale from localStorage). */
+html {
+	font-size: calc(100% * var(--app-font-scale, 1));
+}
+
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
 

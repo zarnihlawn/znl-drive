@@ -16,6 +16,7 @@
 	} from '$lib/state/storage-provider.svelte';
 	import { toastService } from '$lib/service/toast.service.svelte';
 	import { getUserInitials } from '$lib/tool/user-initials';
+	import AppSettingsDialog from '$lib/components/app-settings-dialog.svelte';
 	import {
 		LucideArrowLeft,
 		LucideClock,
@@ -41,6 +42,8 @@
 	let uploading = $state(false);
 	let newFolderName = $state('');
 	let creatingFolder = $state(false);
+
+	let appSettingsDialog = $state<AppSettingsDialog | undefined>(undefined);
 
 	onMount(() => {
 		hydrateStorageProviderFromStorage();
@@ -270,7 +273,11 @@
 							<span class="d-badge">New</span>
 						</a>
 					</li>
-					<li><a href={resolve('/home')}>Settings</a></li>
+					<li>
+						<button type="button" class="w-full text-left" onclick={() => appSettingsDialog?.open()}>
+							Settings
+						</button>
+					</li>
 					<li>
 						<form method="POST" action={resolve(`/api/auth/logout`)}>
 							<button type="submit" class="w-full text-left">Logout</button>
@@ -492,3 +499,4 @@
 	</main>
 </div>
 
+<AppSettingsDialog bind:this={appSettingsDialog} />

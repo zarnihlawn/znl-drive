@@ -29,10 +29,12 @@
 	import type { PageProps } from './$types';
 	import {
 		LucideArrowLeft,
+		LucideCopy,
 		LucideDownload,
 		LucideEllipsisVertical,
 		LucideFile,
 		LucideFolder,
+		LucideLink2,
 		LucidePalette,
 		LucidePencil,
 		LucidePin,
@@ -92,13 +94,141 @@
 	let shareEmailDraft = $state('');
 	let shareSubmitting = $state(false);
 
+	let copyPublicLinkDialogEl = $state<HTMLDialogElement | null>(null);
+	let copyPublicLinkDialog = $state<{
+		name: string;
+		shareUrl: string;
+		imageDirectUrl?: string;
+	} | null>(null);
+
 	/** One floating menu (no Popover API — avoids ghost menus at 0,0 and stuck open state). */
 	let openFileActionsId = $state<string | null>(null);
 	let fileActionsMenuPosition = $state<{ top: number; left: number } | null>(null);
 
+	type PublicLinkMeta =
+		| { loading: true; public?: boolean }
+		| { loading?: false; public: false }
+		| {
+				loading?: false;
+				public: true;
+				token: string;
+				shareUrl: string;
+				imageDirectUrl?: string;
+				copyUrl: string;
+		  };
+
+	let publicLinkMeta = $state<Record<string, PublicLinkMeta>>({});
+
 	function closeFileActionsMenu() {
 		openFileActionsId = null;
 		fileActionsMenuPosition = null;
+	}
+
+	async function copyTextToClipboard(text: string): Promise<void> {
+		if (navigator.clipboard?.writeText) {
+			await navigator.clipboard.writeText(text);
+			return;
+		}
+		const ta = document.createElement('textarea');
+		ta.value = text;
+		ta.style.position = 'fixed';
+		ta.style.left = '-9999px';
+		document.body.appendChild(ta);
+		ta.focus();
+		ta.select();
+		document.execCommand('copy');
+		document.body.removeChild(ta);
+	}
+
+	async function refreshPublicLinkMeta(itemId: string) {
+		publicLinkMeta = { ...publicLinkMeta, [itemId]: { loading: true } };
+		try {
+			const r = await fetchWithSession(resolveHref(`/api/drive/files/${itemId}/public-link`));
+			if (!r.ok) throw new Error((await r.text()) || r.statusText);
+			const j = (await r.json()) as
+				| { public: false }
+				| {
+						public: true;
+						token: string;
+						shareUrl: string;
+						imageDirectUrl?: string;
+						copyUrl: string;
+				  };
+			if (!j.public) {
+				publicLinkMeta = { ...publicLinkMeta, [itemId]: { public: false } };
+			} else {
+				publicLinkMeta = { ...publicLinkMeta, [itemId]: { ...j, loading: false } };
+			}
+		} catch {
+			publicLinkMeta = { ...publicLinkMeta, [itemId]: { public: false } };
+		}
+	}
+
+	async function onPublicLinkToggle(item: DriveItem, makePublic: boolean) {
+		if (busyId === item.id) return;
+		busyId = item.id;
+		try {
+			if (makePublic) {
+				const r = await fetchWithSession(resolveHref(`/api/drive/files/${item.id}/public-link`), {
+					method: 'POST'
+				});
+				if (!r.ok) throw new Error((await r.text()) || 'Failed to enable public link');
+				toastService.addToast('Anyone with the link can view this file', StatusColorEnum.SUCCESS);
+			} else {
+				const r = await fetchWithSession(resolveHref(`/api/drive/files/${item.id}/public-link`), {
+					method: 'DELETE'
+				});
+				if (!r.ok) throw new Error((await r.text()) || 'Failed to disable public link');
+				toastService.addToast('Public link off', StatusColorEnum.INFO);
+			}
+			await refreshPublicLinkMeta(item.id);
+		} catch (e) {
+			toastService.addToast(e instanceof Error ? e.message : 'Public link update failed', StatusColorEnum.ERROR);
+			await refreshPublicLinkMeta(item.id);
+		} finally {
+			busyId = null;
+		}
+	}
+
+	function closeCopyPublicLinkDialog() {
+		copyPublicLinkDialog = null;
+	}
+
+	function openCopyPublicLinkDialog(itemId: string) {
+		const meta = publicLinkMeta[itemId];
+		if (meta?.loading === true) {
+			toastService.addToast('Still loading link…', StatusColorEnum.WARNING);
+			return;
+		}
+		if (!meta || meta.public !== true || !('shareUrl' in meta)) {
+			toastService.addToast('Turn on public link first', StatusColorEnum.WARNING);
+			return;
+		}
+		const item = rows.find((r) => r.id === itemId);
+		closeFileActionsMenu();
+		copyPublicLinkDialog = {
+			name: item?.name ?? 'File',
+			shareUrl: meta.shareUrl,
+			imageDirectUrl: meta.imageDirectUrl
+		};
+		queueMicrotask(() => copyPublicLinkDialogEl?.showModal());
+	}
+
+	async function copyPublicLinkField(url: string, toastMsg: string) {
+		await copyTextToClipboard(url);
+		toastService.addToast(toastMsg, StatusColorEnum.SUCCESS);
+	}
+
+	async function copyDialogSharePageUrl() {
+		const d = copyPublicLinkDialog;
+		if (!d) return;
+		await copyPublicLinkField(d.shareUrl, 'Share page link copied');
+	}
+
+	async function copyDialogDirectImageUrl() {
+		const d = copyPublicLinkDialog;
+		if (!d?.imageDirectUrl) return;
+		await copyPublicLinkField(d.imageDirectUrl, 'Direct image link copied');
 	}
 
 	function computeMenuPlacement(btn: HTMLElement, menuWidth: number, menuHeight: number) {
@@ -125,12 +255,13 @@
 			return;
 		}
 		openFileActionsId = itemId;
-		fileActionsMenuPosition = computeMenuPlacement(btn, 208, 140);
+		fileActionsMenuPosition = computeMenuPlacement(btn, 320, 280);
 		await tick();
 		const menuEl = document.getElementById('file-actions-menu-float');
 		if (menuEl) {
 			fileActionsMenuPosition = computeMenuPlacement(btn, menuEl.offsetWidth, menuEl.offsetHeight);
 		}
+		void refreshPublicLinkMeta(itemId);
 	}
 
 	function onDocumentEscape(e: KeyboardEvent) {
@@ -523,7 +654,7 @@
 		id="file-actions-menu-float"
 		data-open-for={fileActionsMenuItem.id}
 		role="menu"
-		class="d-menu bg-base-100 fixed z-[999] m-0 w-52 rounded-box border border-base-200 p-2 shadow-md"
+		class="d-menu bg-base-100 fixed z-[999] m-0 min-w-[20rem] max-w-[90vw] rounded-box border border-base-200 p-2 shadow-md"
 		style="top: {fileActionsMenuPosition.top}px; left: {fileActionsMenuPosition.left}px;"
 	>
 		{#if fileActionsMenuItem.itemType === 'file' || fileActionsMenuItem.itemType === 'folder'}
@@ -552,6 +683,43 @@
 				</button>
 			</li>
 		{/if}
+		{#key fileActionsMenuItem.id}
+			{@const meta = publicLinkMeta[fileActionsMenuItem.id]}
+			<li role="none">
+				<button
+					type="button"
+					role="menuitem"
+					class="justify-start gap-2"
+					disabled={busyId === fileActionsMenuItem.id || meta?.loading === true}
+					onclick={() =>
+						void onPublicLinkToggle(fileActionsMenuItem, meta?.public !== true)}
+				>
+					<LucideLink2 class="size-4 shrink-0" aria-hidden="true" />
+					{meta?.public === true ? 'Make private' : 'Make public'}
+				</button>
+			</li>
+			<li role="none">
+				<button
+					type="button"
+					role="menuitem"
+					class="justify-start gap-2"
+					disabled={
+						busyId === fileActionsMenuItem.id ||
+						meta?.loading === true ||
+						meta?.public !== true
+					}
+					onclick={() => openCopyPublicLinkDialog(fileActionsMenuItem.id)}
+				>
+					<LucideCopy class="size-4 shrink-0" aria-hidden="true" />
+					Copy link
+				</button>
+			</li>
+			{#if meta?.loading}
+				<li role="none">
+					<div class="text-base-content/50 px-2 py-1 text-xs">Loading link…</div>
+				</li>
+			{/if}
+		{/key}
 		<li role="none">
 			<button
 				type="button"
@@ -657,6 +825,62 @@
 			>
 				{shareSubmitting ? 'Sharing…' : 'Share'}
 			</button>
+		</div>
+	</div>
+</dialog>
+
+<dialog bind:this={copyPublicLinkDialogEl} class="d-modal" onclose={closeCopyPublicLinkDialog}>
+	<div class="d-modal-box max-w-lg">
+		<h3 class="d-font-title text-lg font-bold">Copy public link</h3>
+		{#if copyPublicLinkDialog}
+			<p class="text-base-content/70 py-2 text-sm">{copyPublicLinkDialog.name}</p>
+			<div class="mt-2 space-y-4">
+				<div class="d-form-control w-full">
+					<span class="d-label-text">Share page (full URL)</span>
+					<div class="mt-1 flex flex-col gap-2 sm:flex-row sm:items-stretch">
+						<input
+							type="text"
+							readonly
+							class="d-input d-input-bordered w-full min-w-0 font-mono text-xs"
+							value={copyPublicLinkDialog.shareUrl}
+						/>
+						<button
+							type="button"
+							class="d-btn shrink-0"
+							onclick={() => void copyDialogSharePageUrl()}
+						>
+							<LucideCopy class="size-4 shrink-0" aria-hidden="true" />
+							Copy
+						</button>
+					</div>
+				</div>
+				{#if copyPublicLinkDialog.imageDirectUrl}
+					<div class="d-form-control w-full">
+						<span class="d-label-text">Direct image URL</span>
+						<div class="mt-1 flex flex-col gap-2 sm:flex-row sm:items-stretch">
+							<input
+								type="text"
+								readonly
+								class="d-input d-input-bordered w-full min-w-0 font-mono text-xs"
+								value={copyPublicLinkDialog.imageDirectUrl}
+							/>
+							<button
+								type="button"
+								class="d-btn shrink-0"
+								onclick={() => void copyDialogDirectImageUrl()}
+							>
+								<LucideCopy class="size-4 shrink-0" aria-hidden="true" />
+								Copy
+							</button>
+						</div>
+					</div>
+				{/if}
+			</div>
+		{/if}
+		<div class="d-modal-action">
+			<form method="dialog">
+				<button type="submit" class="d-btn">Close</button>
+			</form>
 		</div>
 	</div>
 </dialog>

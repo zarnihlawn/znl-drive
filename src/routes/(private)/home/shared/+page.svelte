@@ -23,7 +23,8 @@
 		LucideArrowLeft,
 		LucideDownload,
 		LucideFile,
-		LucideFolder
+		LucideFolder,
+		LucideLink
 	} from '@lucide/svelte';
 
 	let { data }: PageProps = $props();
@@ -157,7 +158,7 @@
 							<th class="w-36">Modified</th>
 							<th class="w-32">Storage</th>
 							<th class="min-w-[8rem]">Owner</th>
-							<th class="w-24 text-center">Download</th>
+							<th class="w-40 text-center">Actions</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -216,17 +217,29 @@
 										{item.ownerName}
 									</td>
 									<td class="text-center">
-										<button
-											type="button"
-											class="d-btn d-btn-ghost d-btn-sm d-btn-square"
-											aria-label={item.itemType === 'folder'
-												? `Download ${item.name} as ZIP`
-												: `Download ${item.name}`}
-											disabled={busyId === item.id}
-											onclick={() => void onDownloadItem(item)}
-										>
-											<LucideDownload class="size-4" />
-										</button>
+										<div class="flex items-center justify-center gap-1">
+											<button
+												type="button"
+												class="d-btn d-btn-ghost d-btn-sm d-btn-square"
+												aria-label={item.itemType === 'folder'
+													? `Download ${item.name} as ZIP`
+													: `Download ${item.name}`}
+												disabled={busyId === item.id}
+												onclick={() => void onDownloadItem(item)}
+											>
+												<LucideDownload class="size-4" />
+											</button>
+											<div class="d-tooltip d-tooltip-top" data-tip="Only the owner can create a public link">
+												<button
+													type="button"
+													class="d-btn d-btn-ghost d-btn-sm d-btn-square"
+													aria-label="Copy public link"
+													disabled
+												>
+													<LucideLink class="size-4" />
+												</button>
+											</div>
+										</div>
 									</td>
 								</tr>
 							{/each}

@@ -17,7 +17,7 @@
 	import { driveStorage } from '$lib/state/storage-provider.svelte';
 	import { toastService } from '$lib/service/toast.service.svelte';
 	import { formatBytes } from '$lib/tool/format-bytes';
-	import { LucideFile, LucideFolder, LucideRotateCcw, LucideTrash2 } from '@lucide/svelte';
+	import { LucideFile, LucideFolder, LucideLink, LucideRotateCcw, LucideTrash2 } from '@lucide/svelte';
 
 	type ApiRow = {
 		id: string;
@@ -238,6 +238,12 @@
 									</td>
 									<td class="text-center">
 										<div class="flex flex-wrap items-center justify-center gap-1">
+											<div class="d-tooltip d-tooltip-top" data-tip="Restore the item to copy a link">
+												<button type="button" class="d-btn d-btn-ghost d-btn-sm gap-1" disabled>
+													<LucideLink class="size-3.5" aria-hidden="true" />
+													Link
+												</button>
+											</div>
 											<button
 												type="button"
 												class="d-btn d-btn-ghost d-btn-sm gap-1"

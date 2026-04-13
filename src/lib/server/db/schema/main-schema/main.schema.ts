@@ -1,5 +1,5 @@
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
-import { boolean, integer, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { boolean, index, integer, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 import { MasterStorageProviderSchema } from '../master-schema/master.schema';
 import { createUpdateTimestamp, uuidSchemaWrapper } from '../schema-wrapper';
 
@@ -43,3 +43,23 @@ export const MainFileActivitySchema = pgTable('main_file_activity', {
 	action: text('action').notNull(),
 	...createUpdateTimestamp
 });
+
+export const MainFilePublicLinkSchema = pgTable(
+	'main_file_public_link',
+	{
+		...uuidSchemaWrapper,
+		fileId: uuid('file_id')
+			.notNull()
+			.references(() => MainFileSchema.id, { onDelete: 'cascade' }),
+		ownerId: text('owner_id').notNull(),
+		token: text('token').notNull(),
+		revokedAt: timestamp('revoked_at', { withTimezone: true }),
+		expiresAt: timestamp('expires_at', { withTimezone: true }),
+		...createUpdateTimestamp
+	},
+	(table) => [
+		uniqueIndex('main_file_public_link_token_uidx').on(table.token),
+		index('main_file_public_link_fileId_idx').on(table.fileId),
+		index('main_file_public_link_ownerId_idx').on(table.ownerId)
+	]
+);
