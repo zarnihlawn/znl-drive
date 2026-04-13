@@ -1,4 +1,5 @@
 <script>
+	import { localizeHref } from '$lib/paraglide/runtime';
 	import {
 		LucideArchive,
 		LucideCable,
@@ -17,8 +18,16 @@
 			<h1 class="icon-font text-5xl font-black">Storage As A Service</h1>
 			<p class="my-ft-lead">a portable service that integrates into your workflow.</p>
 
-			<div class="mt-10 flex gap-5">
+			<div class="mt-10 flex flex-wrap gap-3 sm:gap-5">
 				<a class="d-btn d-btn-primary" href={resolve('/(private)/home')}>Get Started</a>
+				<a
+					class="d-btn d-btn-outline"
+					href={localizeHref('/onboarding/docs')}
+					target="_blank"
+					rel="noopener noreferrer"
+				>
+					Documentation
+				</a>
 				<a class="d-btn d-btn-outline" href="https://github.com/zarnihlawn/znl-drive"
 					>Host Your Own</a
 				>

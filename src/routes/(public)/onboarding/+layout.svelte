@@ -2,6 +2,7 @@
 	import { daisyDropdown } from '$lib/actions/daisy-dropdown';
 	import { LucideCircleUser, LucideCloudUpload, LucideMenu } from '@lucide/svelte';
 	import { resolve } from '$app/paths';
+	import { localizeHref } from '$lib/paraglide/runtime';
 	import { SiGithub } from '@icons-pack/svelte-simple-icons';
 
 	let { children } = $props();
@@ -22,7 +23,9 @@
 					tabindex="-1"
 					class="d-dropdown-content d-menu bg-base-100 rounded-box z-1 mt-1 w-52 p-2 shadow-sm"
 				>
-					<li><a href={resolve('/(public)/onboarding/docs')}>Docs</a></li>
+					<li>
+						<a href={localizeHref('/onboarding/docs')} target="_blank" rel="noopener noreferrer">Docs</a>
+					</li>
 					<li><a href={resolve('/(public)/onboarding/blogs')}>Blogs</a></li>
 					<li><a href={resolve('/(public)/onboarding/pricing')}>Pricing</a></li>
 				</ul>
@@ -31,7 +34,9 @@
 		</div>
 		<div class="d-navbar-center hidden lg:flex">
 			<ul class="d-menu d-menu-horizontal gap-5 px-1">
-				<li><a href={resolve('/(public)/onboarding/docs')}>Docs</a></li>
+				<li>
+					<a href={localizeHref('/onboarding/docs')} target="_blank" rel="noopener noreferrer">Docs</a>
+				</li>
 				<li><a href={resolve('/(public)/onboarding/blogs')}>Blogs</a></li>
 				<li><a href={resolve('/(public)/onboarding/pricing')}>Pricing</a></li>
 			</ul>

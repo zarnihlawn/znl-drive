@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { localizeHref } from '$lib/paraglide/runtime';
 	import { fetchWithSession } from '$lib/client/fetch-session';
 	import { pathWithoutBase } from '$lib/url/path-without-base';
 	import { resolveHref } from '$lib/url/resolve-href';
@@ -247,6 +248,14 @@
 			/>
 		</div>
 		<div class="d-navbar-end gap-3 sm:gap-4">
+			<a
+				href={localizeHref('/onboarding/docs')}
+				class="d-btn d-btn-ghost d-btn-sm hidden md:inline-flex"
+				target="_blank"
+				rel="noopener noreferrer"
+			>
+				Docs
+			</a>
 			<select
 				class="d-select-bordered d-select max-w-[12rem] min-w-[10rem]"
 				value={driveStorage.current}

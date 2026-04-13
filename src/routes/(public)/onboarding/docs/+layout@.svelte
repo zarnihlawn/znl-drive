@@ -1,0 +1,117 @@
+<script lang="ts">
+	import { page } from '$app/state';
+	import {
+		DOCS_ROOT,
+		docsCanonicalPath,
+		findDocsBreadcrumbChain,
+		flattenDocsNav,
+		isDocsNavItemActive
+	} from '$lib/docs/nav';
+	import { localizeHref } from '$lib/paraglide/runtime';
+	import { LucideBookOpen, LucideMenu } from '@lucide/svelte';
+
+	let { children } = $props();
+
+	const drawerId = 'docs-drawer-nav';
+
+	const canonicalPath = $derived(docsCanonicalPath(page.url.pathname));
+	const flatNav = $derived(flattenDocsNav());
+	const breadcrumbChain = $derived(findDocsBreadcrumbChain(canonicalPath) ?? []);
+</script>
+
+<svelte:head>
+	<title>Documentation · ZNL-DRIVE</title>
+	<meta
+		name="description"
+		content="ZNL-DRIVE user manual, developer API reference, and contributor guide."
+	/>
+</svelte:head>
+
+<div class="d-drawer lg:d-drawer-open min-h-[100dvh]">
+	<input id={drawerId} type="checkbox" class="d-drawer-toggle peer/drawer" />
+	<div class="d-drawer-content flex min-h-[100dvh] flex-col bg-base-100">
+		<div class="d-navbar border-base-200 sticky top-0 z-30 border-b bg-base-100/95 backdrop-blur">
+			<div class="flex-none lg:hidden">
+				<label for={drawerId} class="d-btn d-btn-square d-btn-ghost" aria-label="Open sidebar">
+					<LucideMenu class="size-5" />
+				</label>
+			</div>
+			<div class="flex flex-1 items-center gap-2 px-2">
+				<a href={localizeHref('/onboarding')} class="d-btn d-btn-ghost px-2 text-lg font-semibold">
+					ZNL-DRIVE
+				</a>
+				<span class="text-base-content/40 hidden sm:inline">/</span>
+				<span class="text-base-content/80 flex items-center gap-1 text-sm font-medium">
+					<LucideBookOpen class="size-4 shrink-0 opacity-70" aria-hidden="true" />
+					Docs
+				</span>
+			</div>
+			<div class="hidden flex-none sm:block">
+				<a href={localizeHref('/home')} class="d-btn d-btn-ghost d-btn-sm">Open app</a>
+			</div>
+		</div>
+
+		<main class="flex min-h-0 flex-1 flex-col">
+			<div class="border-base-200 bg-base-200/30 border-b px-4 py-3 lg:px-8">
+				<nav class="d-breadcrumbs text-sm" aria-label="Breadcrumb">
+					<ul>
+						<li>
+							{#if canonicalPath === DOCS_ROOT}
+								<span class="font-medium">Overview</span>
+							{:else}
+								<a href={localizeHref(DOCS_ROOT)}>Documentation</a>
+							{/if}
+						</li>
+						{#if canonicalPath !== DOCS_ROOT}
+							{#each breadcrumbChain as crumb, i (crumb.path)}
+								<li>
+									{#if i < breadcrumbChain.length - 1}
+										<a href={localizeHref(crumb.path)}>{crumb.title}</a>
+									{:else}
+										<span class="font-medium">{crumb.title}</span>
+									{/if}
+								</li>
+							{/each}
+						{/if}
+					</ul>
+				</nav>
+			</div>
+
+			<div
+				class="prose prose-sm dark:prose-invert max-w-none flex-1 px-4 py-8 lg:px-10 [&_a]:link-primary"
+			>
+				{@render children()}
+			</div>
+
+			<footer class="border-base-200 text-base-content/50 mt-auto border-t px-4 py-6 text-center text-xs lg:px-8">
+				ZNL-DRIVE documentation — DaisyUI + Tailwind Typography
+			</footer>
+		</main>
+	</div>
+
+	<div class="d-drawer-side z-40 h-full max-h-[100dvh] border-r border-base-200">
+		<label for={drawerId} class="d-drawer-overlay" aria-label="Close menu"></label>
+		<aside
+			class="bg-base-200/80 flex h-full w-72 max-w-[85vw] flex-col gap-2 overflow-y-auto pt-4 pb-8 backdrop-blur"
+		>
+			<div class="px-4 pb-2">
+				<p class="text-base-content/60 text-xs font-semibold tracking-wide uppercase">On this site</p>
+			</div>
+			<ul class="d-menu d-menu-md w-full gap-0.5 px-2">
+				{#each flatNav as entry (entry.path)}
+					<li>
+						<a
+							href={localizeHref(entry.path)}
+							class="rounded-lg {isDocsNavItemActive(canonicalPath, entry.path)
+								? 'd-menu-active font-medium'
+								: ''}"
+							style="padding-left: {0.75 + entry.depth * 0.75}rem"
+						>
+							{entry.title}
+						</a>
+					</li>
+				{/each}
+			</ul>
+		</aside>
+	</div>
+</div>
