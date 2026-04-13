@@ -7,6 +7,8 @@ export const AuthUserSchema = pgTable('auth_user', {
 	email: text('email').notNull().unique(),
 	emailVerified: boolean('email_verified').default(false).notNull(),
 	image: text('image'),
+	/** When true, user may create API keys; keys authenticate drive APIs as this user. */
+	developerModeEnabled: boolean('developer_mode_enabled').notNull().default(false),
 	...createUpdateTimestamp
 });
 

@@ -16,6 +16,7 @@
 	} from '$lib/state/storage-provider.svelte';
 	import { toastService } from '$lib/service/toast.service.svelte';
 	import { getUserInitials } from '$lib/tool/user-initials';
+	import AppProfileDialog from '$lib/components/app-profile-dialog.svelte';
 	import AppSettingsDialog from '$lib/components/app-settings-dialog.svelte';
 	import {
 		LucideArrowLeft,
@@ -44,6 +45,7 @@
 	let creatingFolder = $state(false);
 
 	let appSettingsDialog = $state<AppSettingsDialog | undefined>(undefined);
+	let appProfileDialog = $state<AppProfileDialog | undefined>(undefined);
 
 	onMount(() => {
 		hydrateStorageProviderFromStorage();
@@ -268,10 +270,14 @@
 					class="d-dropdown-content d-menu bg-base-100 rounded-box z-1 mt-1 w-52 p-2 shadow-sm"
 				>
 					<li>
-						<a class="justify-between" href={resolve('/home')}>
+						<button
+							type="button"
+							class="flex w-full items-center justify-between text-left"
+							onclick={() => appProfileDialog?.open()}
+						>
 							Profile
 							<span class="d-badge">New</span>
-						</a>
+						</button>
 					</li>
 					<li>
 						<button type="button" class="w-full text-left" onclick={() => appSettingsDialog?.open()}>
@@ -499,4 +505,10 @@
 	</main>
 </div>
 
+<AppProfileDialog
+	user={data.user}
+	appVersion={data.appVersion}
+	developerModeEnabled={data.developerModeEnabled}
+	bind:this={appProfileDialog}
+/>
 <AppSettingsDialog bind:this={appSettingsDialog} />

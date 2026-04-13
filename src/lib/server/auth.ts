@@ -15,6 +15,16 @@ import { getFromAddress, getSmtpTransport } from '$lib/server/mailer';
 export const auth = betterAuth({
 	baseURL: env.ORIGIN,
 	secret: env.BETTER_AUTH_SECRET,
+	user: {
+		additionalFields: {
+			developerModeEnabled: {
+				type: 'boolean',
+				required: false,
+				defaultValue: false,
+				input: false
+			}
+		}
+	},
 	/** Cookie / session lifetime (seconds). Default in Better Auth is 7 days. */
 	session: {
 		expiresIn: 60 * 60 * 24

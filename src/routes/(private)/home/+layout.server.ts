@@ -1,12 +1,25 @@
 import { resolve } from '$app/paths';
 import { canAccessSharedItem, sharedRootIdsForRecipient } from '$lib/server/drive-shared-access';
 import { db } from '$lib/server/db';
+import { AuthUserSchema } from '$lib/server/db/schema/auth-schema/auth.schema';
 import { MainFileSchema } from '$lib/server/db/schema/main-schema/main.schema';
 import { pathWithoutBase } from '$lib/url/path-without-base';
 import type { LayoutServerLoad } from './$types';
 import { redirect } from '@sveltejs/kit';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { and, eq, isNull } from 'drizzle-orm';
 import { z } from 'zod';
+
+function readAppVersion(): string {
+	try {
+		const raw = readFileSync(join(process.cwd(), 'package.json'), 'utf-8');
+		const j = JSON.parse(raw) as { version?: string };
+		return typeof j.version === 'string' ? j.version : '0.0.1';
+	} catch {
+		return '0.0.1';
+	}
+}
 
 export const load: LayoutServerLoad = async ({ locals, url }) => {
 	if (!locals.user) {
@@ -107,8 +120,20 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 		}
 	}
 
+	let developerModeEnabled = false;
+	if (locals.user?.id) {
+		const [u] = await db
+			.select({ developerModeEnabled: AuthUserSchema.developerModeEnabled })
+			.from(AuthUserSchema)
+			.where(eq(AuthUserSchema.id, locals.user.id))
+			.limit(1);
+		developerModeEnabled = u?.developerModeEnabled ?? false;
+	}
+
 	return {
 		user: locals.user ?? null,
+		appVersion: readAppVersion(),
+		developerModeEnabled,
 		currentFolder,
 		sharedView: isSharedPage,
 		trashView: isTrashPage

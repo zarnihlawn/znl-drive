@@ -15,6 +15,13 @@
       "when": 1776091937939,
       "tag": "0001_mean_invaders",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1776100615684,
+      "tag": "0002_aberrant_freak",
+      "breakpoints": true
     }
   ]
 }
