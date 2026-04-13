@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
-	import { base, resolve } from '$app/paths';
+	import { resolve } from '$app/paths';
 	import { fetchWithSession } from '$lib/client/fetch-session';
+	import { resolveHref } from '$lib/url/resolve-href';
 	import { page } from '$app/state';
 	import { downloadDriveFileAsBlob } from '$lib/client/drive-file';
 	import {
@@ -87,7 +88,7 @@
 				storageProvider: driveStorage.current
 			});
 			if (folderId) qs.set('folder', folderId);
-			const r = await fetchWithSession(`${base}/api/drive/shared?${qs}`);
+			const r = await fetchWithSession(`${resolveHref('/api/drive/shared')}?${qs}`);
 			if (!r.ok) {
 				const t = await r.text();
 				throw new Error(t || r.statusText);

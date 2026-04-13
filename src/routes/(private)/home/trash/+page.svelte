@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import { base, resolve } from '$app/paths';
+	import { resolve } from '$app/paths';
 	import { fetchWithSession } from '$lib/client/fetch-session';
+	import { resolveHref } from '$lib/url/resolve-href';
 	import { page } from '$app/state';
 	import { patchDriveFile, permanentDeleteDriveFile } from '$lib/client/drive-file';
 	import {
@@ -88,7 +89,7 @@
 		loadError = null;
 		try {
 			const qs = new URLSearchParams({ storageProvider: driveStorage.current });
-			const r = await fetchWithSession(`${base}/api/drive/trash?${qs}`);
+			const r = await fetchWithSession(`${resolveHref('/api/drive/trash')}?${qs}`);
 			if (!r.ok) {
 				const t = await r.text();
 				throw new Error(t || r.statusText);

@@ -1,17 +1,12 @@
-import { base, resolve } from '$app/paths';
+import { resolve } from '$app/paths';
 import { canAccessSharedItem, sharedRootIdsForRecipient } from '$lib/server/drive-shared-access';
 import { db } from '$lib/server/db';
 import { MainFileSchema } from '$lib/server/db/schema/main-schema/main.schema';
+import { pathWithoutBase } from '$lib/url/path-without-base';
 import type { LayoutServerLoad } from './$types';
 import { redirect } from '@sveltejs/kit';
 import { and, eq, isNull } from 'drizzle-orm';
 import { z } from 'zod';
-
-function pathWithoutBase(pathname: string): string {
-	const p = pathname.slice(base.length) || '/';
-	if (p.length > 1 && p.endsWith('/')) return p.slice(0, -1);
-	return p;
-}
 
 export const load: LayoutServerLoad = async ({ locals, url }) => {
 	if (!locals.user) {

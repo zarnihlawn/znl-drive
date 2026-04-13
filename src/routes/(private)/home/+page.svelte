@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
-	import { base, resolve } from '$app/paths';
+	import { resolve } from '$app/paths';
 	import { fetchWithSession } from '$lib/client/fetch-session';
+	import { resolveHref } from '$lib/url/resolve-href';
 	import { page } from '$app/state';
 	import {
 		downloadDriveFileAsBlob,
@@ -192,7 +193,7 @@
 				storageProvider: driveStorage.current
 			});
 			if (folderId) qs.set('parentId', folderId);
-			const r = await fetchWithSession(`${base}/api/drive/files?${qs}`);
+			const r = await fetchWithSession(`${resolveHref('/api/drive/files')}?${qs}`);
 			if (!r.ok) {
 				const t = await r.text();
 				throw new Error(t || r.statusText);

@@ -1,4 +1,4 @@
-import { base } from '$app/paths';
+import { resolve as resolveAppPath } from '$app/paths';
 import { redirectToLoginSessionExpired } from '$lib/client/fetch-session';
 import type { StorageProviderId } from '$lib/model/storage-provider';
 
@@ -35,7 +35,7 @@ function postChunk(
 			}
 		});
 		xhr.addEventListener('error', () => reject(new Error('Network error')));
-		xhr.open('POST', `${base}/api/drive/upload/chunk`);
+		xhr.open('POST', resolveAppPath('/api/drive/upload/chunk'));
 		xhr.withCredentials = true;
 		xhr.send(fd);
 	});
@@ -64,7 +64,7 @@ function postMultipart(fd: FormData, onProgress: (loaded: number, total: number)
 			}
 		});
 		xhr.addEventListener('error', () => reject(new Error('Network error')));
-		xhr.open('POST', `${base}/api/drive/upload`);
+		xhr.open('POST', resolveAppPath('/api/drive/upload'));
 		xhr.withCredentials = true;
 		xhr.send(fd);
 	});

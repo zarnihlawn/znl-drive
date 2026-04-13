@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { base, resolve } from '$app/paths';
+	import { resolve } from '$app/paths';
+	import { resolveHref } from '$lib/url/resolve-href';
 	import { togglePasswordVisibility } from '$lib/tool/password.tool';
 	import { LucideEye, LucideEyeClosed } from '@lucide/svelte';
 	import { onMount } from 'svelte';
@@ -42,7 +43,7 @@
 
 		isSubmitting = true;
 		try {
-			const res = await fetch(`${base}/api/auth/reset-password`, {
+			const res = await fetch(resolveHref('/api/auth/reset-password'), {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ newPassword, token })

@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { base } from '$app/paths';
 	import { resolve } from '$app/paths';
+	import { resolveHref } from '$lib/url/resolve-href';
 
 	let email = $state('');
 	let isSubmitting = $state(false);
@@ -12,10 +12,10 @@
 		isSubmitting = true;
 
 		try {
-			await fetch(`${base}/api/auth/request-password-reset`, {
+			await fetch(resolveHref('/api/auth/request-password-reset'), {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({ email, redirectTo: `${base}/auth/reset-password` })
+				body: JSON.stringify({ email, redirectTo: resolve('/auth/reset-password') })
 			});
 		} finally {
 			isSubmitting = false;

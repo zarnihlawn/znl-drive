@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { fetchWithSession } from '$lib/client/fetch-session';
+	import { pathWithoutBase } from '$lib/url/path-without-base';
+	import { resolveHref } from '$lib/url/resolve-href';
 	import { page } from '$app/state';
 	import { daisyDropdown } from '$lib/actions/daisy-dropdown';
 	import { uploadFilesWithProgress } from '$lib/client/upload-drive';
@@ -143,16 +145,23 @@
 
 	const breadcrumbs = $derived.by((): BreadcrumbItem[] => {
 		if (data.trashView) {
-			return [{ href: null, label: 'Trash', isLast: true }];
+			return [
+				{ href: resolve('/home'), label: 'Home', isLast: false },
+				{ href: null, label: 'Trash', isLast: true }
+			];
 		}
 		if (data.sharedView) {
 			if (data.currentFolder) {
 				return [
+					{ href: resolve('/home'), label: 'Home', isLast: false },
 					{ href: resolve('/home/shared'), label: 'Shared', isLast: false },
 					{ href: null, label: data.currentFolder.name, isLast: true }
 				];
 			}
-			return [{ href: null, label: 'Shared', isLast: true }];
+			return [
+				{ href: resolve('/home'), label: 'Home', isLast: false },
+				{ href: null, label: 'Shared', isLast: true }
+			];
 		}
 		if (data.currentFolder) {
 			return [
@@ -160,12 +169,31 @@
 				{ href: null, label: data.currentFolder.name, isLast: true }
 			];
 		}
-		const segments = page.url.pathname.split('/').filter(Boolean);
-		if (segments.length === 0) {
+
+		const segments = pathWithoutBase(page.url.pathname).split('/').filter(Boolean);
+		if (segments.length === 0 || (segments.length === 1 && segments[0] === 'home')) {
 			return [{ href: null, label: 'Home', isLast: true }];
 		}
+
+		if (segments[0] === 'home' && segments.length >= 2) {
+			const crumbs: BreadcrumbItem[] = [
+				{ href: resolve('/home'), label: 'Home', isLast: false }
+			];
+			for (let i = 1; i < segments.length; i++) {
+				const isLast = i === segments.length - 1;
+				const pathToHere = '/' + segments.slice(0, i + 1).join('/');
+				crumbs.push({
+					href: isLast ? null : resolveHref(pathToHere),
+					label: formatBreadcrumbLabel(segments[i]),
+					isLast
+				});
+			}
+			return crumbs;
+		}
+
 		return segments.map((segment, i) => ({
-			href: i === segments.length - 1 ? null : '/' + segments.slice(0, i + 1).join('/'),
+			href:
+				i === segments.length - 1 ? null : resolveHref('/' + segments.slice(0, i + 1).join('/')),
 			label: formatBreadcrumbLabel(segment),
 			isLast: i === segments.length - 1
 		}));
@@ -184,7 +212,7 @@
 		if (data.trashView) return 'Trash';
 		if (data.sharedView) return data.currentFolder?.name ?? 'Shared';
 		if (data.currentFolder) return data.currentFolder.name;
-		const segments = page.url.pathname.split('/').filter(Boolean);
+		const segments = pathWithoutBase(page.url.pathname).split('/').filter(Boolean);
 		const last = segments.at(-1);
 		if (!last) return 'Home';
 		return formatBreadcrumbLabel(last);
@@ -428,7 +456,21 @@
 										<span aria-current="page">{crumb.label}</span>
 									{:else if crumb.href}
 										<a href={crumb.href}>{crumb.label}</a>
-									{:else}
+									{:else}<nav class="d-breadcrumbs min-w-0 pr-2 italic" aria-label="Breadcrumb">
+										<ul>
+											{#each breadcrumbs as crumb, i (String(i) + (crumb.href ?? '') + crumb.label)}
+												<li>
+													{#if crumb.isLast}
+														<span aria-current="page">{crumb.label}</span>
+													{:else if crumb.href}
+														<a href={crumb.href}>{crumb.label}</a>
+													{:else}
+														<span>{crumb.label}</span>
+													{/if}
+												</li>
+											{/each}
+										</ul>
+									</nav>
 										<span>{crumb.label}</span>
 									{/if}
 								</li>

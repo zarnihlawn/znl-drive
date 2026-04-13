@@ -1,5 +1,5 @@
-import { base } from '$app/paths';
 import { fetchWithSession } from '$lib/client/fetch-session';
+import { resolveHref } from '$lib/url/resolve-href';
 import type { FileLabelColorId } from '$lib/model/file-label-color';
 
 export type PatchDriveFileBody = {
@@ -11,7 +11,7 @@ export type PatchDriveFileBody = {
 };
 
 export async function patchDriveFile(id: string, body: PatchDriveFileBody): Promise<{ ok: boolean }> {
-	const r = await fetchWithSession(`${base}/api/drive/files/${id}`, {
+	const r = await fetchWithSession(resolveHref(`/api/drive/files/${id}`), {
 		method: 'PATCH',
 		headers: { 'content-type': 'application/json' },
 		body: JSON.stringify(body)
@@ -24,7 +24,7 @@ export async function patchDriveFile(id: string, body: PatchDriveFileBody): Prom
 }
 
 export async function permanentDeleteDriveFile(id: string): Promise<{ ok: boolean }> {
-	const r = await fetchWithSession(`${base}/api/drive/files/${id}`, {
+	const r = await fetchWithSession(resolveHref(`/api/drive/files/${id}`), {
 		method: 'DELETE'
 	});
 	if (!r.ok) {
@@ -38,7 +38,7 @@ export async function shareDriveFile(
 	id: string,
 	body: { targetEmail: string; permission?: 'read' | 'write'; canReshare?: boolean }
 ): Promise<{ ok: boolean; alreadyShared?: boolean }> {
-	const r = await fetchWithSession(`${base}/api/drive/files/${id}/share`, {
+	const r = await fetchWithSession(resolveHref(`/api/drive/files/${id}/share`), {
 		method: 'POST',
 		headers: { 'content-type': 'application/json' },
 		body: JSON.stringify(body)
@@ -67,7 +67,7 @@ function filenameFromContentDisposition(header: string | null, fallback: string)
 
 /** Triggers browser download via blob (cookie session). Files and folders (ZIP) use the server Content-Disposition name when present. */
 export async function downloadDriveFileAsBlob(id: string, filenameFallback: string): Promise<void> {
-	const r = await fetchWithSession(`${base}/api/drive/files/${id}/download`);
+	const r = await fetchWithSession(resolveHref(`/api/drive/files/${id}/download`));
 	if (!r.ok) {
 		const t = await r.text();
 		throw new Error(t || `Download failed (${r.status})`);
