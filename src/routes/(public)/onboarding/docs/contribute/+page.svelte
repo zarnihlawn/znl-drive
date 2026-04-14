@@ -1,8 +1,3 @@
-<svelte:head>
-	<title>Contribute · Documentation · ZNL-DRIVE</title>
-	<meta name="description" content="Run the project locally: stack, repo layout, env, workflows, architecture." />
-</svelte:head>
-
 <script lang="ts">
 	import { localizeHref } from '$lib/paraglide/runtime';
 	import {
@@ -48,9 +43,17 @@
 	] as const;
 </script>
 
+<svelte:head>
+	<title>Contribute · Documentation · ZNL-DRIVE</title>
+	<meta
+		name="description"
+		content="Run the project locally: stack, repo layout, env, workflows, architecture."
+	/>
+</svelte:head>
+
 <div class="not-prose mx-auto max-w-4xl">
-	<h1 class="text-base-content mb-2 text-3xl font-bold">Contribute</h1>
-	<p class="text-base-content/70 mb-10 text-lg">
+	<h1 class="mb-2 text-3xl font-bold text-base-content">Contribute</h1>
+	<p class="mb-10 text-lg text-base-content/70">
 		Run the app locally, match existing patterns, and land changes with the same checks CI uses.
 	</p>
 
@@ -59,17 +62,17 @@
 			<li>
 				<a
 					href={localizeHref(c.href)}
-					class="d-card bg-base-200/40 border-base-200 hover:border-accent/40 flex h-full flex-col rounded-box border p-5 shadow-sm transition-colors"
+					class="d-card flex h-full flex-col rounded-box border border-base-200 bg-base-200/40 p-5 shadow-sm transition-colors hover:border-accent/40"
 				>
-					<c.Icon class="text-accent mb-3 size-9" aria-hidden="true" />
+					<c.Icon class="mb-3 size-9 text-accent" aria-hidden="true" />
 					<h2 class="text-lg font-semibold">{c.title}</h2>
-					<p class="text-base-content/65 mt-2 text-sm">{c.desc}</p>
+					<p class="mt-2 text-sm text-base-content/65">{c.desc}</p>
 				</a>
 			</li>
 		{/each}
 	</ul>
 
-	<p class="text-base-content/60 mt-10 flex items-start gap-2 text-sm">
+	<p class="mt-10 flex items-start gap-2 text-sm text-base-content/60">
 		<LucideBookOpen class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
 		Start with <strong>Stack</strong> and <strong>Repository layout</strong> if you are new to the codebase.
 	</p>

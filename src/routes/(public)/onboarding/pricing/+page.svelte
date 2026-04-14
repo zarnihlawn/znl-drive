@@ -106,31 +106,37 @@
 	/>
 </svelte:head>
 
-<div class="mx-auto flex w-full max-w-6xl flex-col gap-12 px-4 py-10 sm:px-6 lg:gap-14 lg:px-8 lg:py-12">
+<div
+	class="mx-auto flex w-full max-w-6xl flex-col gap-12 px-4 py-10 sm:px-6 lg:gap-14 lg:px-8 lg:py-12"
+>
 	<header class="flex flex-col items-center text-center">
 		<span
-			class="d-badge d-badge-outline mb-5 inline-flex h-auto min-h-0 items-center gap-2 px-3 py-2 text-sm font-medium leading-normal"
+			class="mb-5 d-badge inline-flex h-auto min-h-0 items-center gap-2 d-badge-outline px-3 py-2 text-sm leading-normal font-medium"
 		>
 			<LucideSparkles class="size-4 shrink-0 opacity-80" aria-hidden="true" />
 			Simple plans, clear limits
 		</span>
 		<h1 class="text-4xl font-bold tracking-tight text-base-content sm:text-5xl">Pricing</h1>
 		<p class="mt-4 max-w-2xl text-base leading-relaxed text-base-content/80">
-			Choose how much you keep on <strong class="font-semibold text-base-content">local disk</strong> vs
-			<strong class="font-semibold text-base-content">Tigris</strong>. Everyone starts on Free; upgrade when
-			you need more space.
+			Choose how much you keep on <strong class="font-semibold text-base-content">local disk</strong
+			>
+			vs
+			<strong class="font-semibold text-base-content">Tigris</strong>. Everyone starts on Free;
+			upgrade when you need more space.
 		</p>
-		<ul class="mt-6 grid max-w-xl gap-2 text-left text-sm text-base-content/75 sm:grid-cols-2 sm:gap-x-8">
+		<ul
+			class="mt-6 grid max-w-xl gap-2 text-left text-sm text-base-content/75 sm:grid-cols-2 sm:gap-x-8"
+		>
 			<li class="flex gap-2 sm:col-span-2">
-				<LucideCheck class="text-success mt-0.5 size-4 shrink-0" aria-hidden="true" />
+				<LucideCheck class="mt-0.5 size-4 shrink-0 text-success" aria-hidden="true" />
 				<span>Free tier is automatic—no plan selected means Free (10 MB local, 1 GB Tigris).</span>
 			</li>
 			<li class="flex gap-2">
-				<LucideCheck class="text-success mt-0.5 size-4 shrink-0" aria-hidden="true" />
+				<LucideCheck class="mt-0.5 size-4 shrink-0 text-success" aria-hidden="true" />
 				<span>Same product features on every tier.</span>
 			</li>
 			<li class="flex gap-2">
-				<LucideCheck class="text-success mt-0.5 size-4 shrink-0" aria-hidden="true" />
+				<LucideCheck class="mt-0.5 size-4 shrink-0 text-success" aria-hidden="true" />
 				<span>Pay as you go and quotes for larger teams.</span>
 			</li>
 		</ul>
@@ -142,11 +148,11 @@
 	</header>
 
 	<section aria-label="Plan highlights" class="grid gap-4 sm:grid-cols-3">
-		<div class="d-card border-base-300 bg-base-100 border shadow-sm">
+		<div class="d-card border border-base-300 bg-base-100 shadow-sm">
 			<div class="d-card-body gap-3 p-5">
-				<div class="text-primary flex items-center gap-2">
+				<div class="flex items-center gap-2 text-primary">
 					<LucideShieldCheck class="size-8 shrink-0" aria-hidden="true" />
-					<span class="text-xs font-semibold uppercase tracking-wide opacity-80">Default</span>
+					<span class="text-xs font-semibold tracking-wide uppercase opacity-80">Default</span>
 				</div>
 				<p class="text-xl font-bold">Free for everyone</p>
 				<p class="text-sm leading-snug text-base-content/75">
@@ -154,11 +160,11 @@
 				</p>
 			</div>
 		</div>
-		<div class="d-card border-base-300 bg-base-100 border shadow-sm">
+		<div class="d-card border border-base-300 bg-base-100 shadow-sm">
 			<div class="d-card-body gap-3 p-5">
-				<div class="text-secondary flex items-center gap-2">
+				<div class="flex items-center gap-2 text-secondary">
 					<LucideCloud class="size-8 shrink-0" aria-hidden="true" />
-					<span class="text-xs font-semibold uppercase tracking-wide opacity-80">Providers</span>
+					<span class="text-xs font-semibold tracking-wide uppercase opacity-80">Providers</span>
 				</div>
 				<p class="text-xl font-bold">Local + Tigris</p>
 				<p class="text-sm leading-snug text-base-content/75">
@@ -166,11 +172,11 @@
 				</p>
 			</div>
 		</div>
-		<div class="d-card border-base-300 bg-base-100 border shadow-sm">
+		<div class="d-card border border-base-300 bg-base-100 shadow-sm">
 			<div class="d-card-body gap-3 p-5">
-				<div class="text-accent flex items-center gap-2">
+				<div class="flex items-center gap-2 text-accent">
 					<LucideHeadphones class="size-8 shrink-0" aria-hidden="true" />
-					<span class="text-xs font-semibold uppercase tracking-wide opacity-80">Support</span>
+					<span class="text-xs font-semibold tracking-wide uppercase opacity-80">Support</span>
 				</div>
 				<p class="text-xl font-bold">Tiered by plan</p>
 				<p class="text-sm leading-snug text-base-content/75">
@@ -180,10 +186,7 @@
 		</div>
 	</section>
 
-	<div
-		role="alert"
-		class="d-alert d-alert-info border-info/25 w-full border shadow-sm"
-	>
+	<div role="alert" class="d-alert w-full border border-info/25 d-alert-info shadow-sm">
 		<LucideShieldCheck class="size-6 shrink-0" aria-hidden="true" />
 		<div class="text-left">
 			<h2 class="text-base font-semibold">Free is the default for every user</h2>
@@ -193,9 +196,11 @@
 		</div>
 	</div>
 
-	<section id="plans" aria-labelledby="plans-heading" class="flex flex-col gap-8 scroll-mt-20">
+	<section id="plans" aria-labelledby="plans-heading" class="flex scroll-mt-20 flex-col gap-8">
 		<div class="text-center">
-			<h2 id="plans-heading" class="text-3xl font-bold text-base-content">Plans &amp; included storage</h2>
+			<h2 id="plans-heading" class="text-3xl font-bold text-base-content">
+				Plans &amp; included storage
+			</h2>
 			<p class="mx-auto mt-2 max-w-2xl text-base-content/75">
 				Prices below are indicative for self-serve tiers; your invoice may reflect taxes, currency,
 				and deployment-specific adjustments.
@@ -205,8 +210,8 @@
 		<div class="grid gap-6 lg:grid-cols-3">
 			{#each corePlans as plan (plan.id)}
 				<div
-					class="d-card bg-base-100 border-base-300 flex flex-col border shadow-sm transition-shadow {plan.highlight
-						? 'border-primary/40 ring-primary/25 ring-2'
+					class="d-card flex flex-col border border-base-300 bg-base-100 shadow-sm transition-shadow {plan.highlight
+						? 'border-primary/40 ring-2 ring-primary/25'
 						: ''}"
 				>
 					<div class="d-card-body flex flex-1 flex-col gap-4">
@@ -221,15 +226,15 @@
 								{plan.id === 'free' ? plan.period : `· ${plan.period}`}
 							</span>
 						</div>
-						<div class="bg-base-200/80 rounded-box border border-base-300/80 p-4 text-sm">
+						<div class="rounded-box border border-base-300/80 bg-base-200/80 p-4 text-sm">
 							<p class="mb-2 flex items-center gap-2 font-medium">
-								<LucideHardDrive class="text-primary size-4" />
+								<LucideHardDrive class="size-4 text-primary" />
 								Local storage
 							</p>
 							<p class="text-lg font-semibold">{plan.local}</p>
-							<div class="d-divider my-2"> </div>
+							<div class="d-divider my-2"></div>
 							<p class="mb-2 flex items-center gap-2 font-medium">
-								<LucideCloud class="text-secondary size-4" />
+								<LucideCloud class="size-4 text-secondary" />
 								Tigris cloud
 							</p>
 							<p class="text-lg font-semibold">{plan.tigris}</p>
@@ -237,12 +242,12 @@
 						<ul class="flex flex-1 flex-col gap-2 text-sm">
 							{#each plan.features as line (line)}
 								<li class="flex gap-2">
-									<LucideCheck class="text-success mt-0.5 size-4 shrink-0" />
+									<LucideCheck class="mt-0.5 size-4 shrink-0 text-success" />
 									<span>{line}</span>
 								</li>
 							{/each}
 						</ul>
-						<div class="d-card-actions mt-2">
+						<div class="mt-2 d-card-actions">
 							<a class="d-btn {plan.ctaVariant} w-full" href={signupHref}>{plan.cta}</a>
 						</div>
 					</div>
@@ -252,15 +257,17 @@
 	</section>
 
 	<section aria-labelledby="flex-heading" class="grid gap-6 lg:grid-cols-2">
-		<div class="d-card bg-base-100 border-base-300 border shadow-sm">
+		<div class="d-card border border-base-300 bg-base-100 shadow-sm">
 			<div class="d-card-body gap-4">
 				<div class="flex items-start gap-3">
-					<div class="bg-accent/15 text-accent rounded-box flex size-12 items-center justify-center">
+					<div
+						class="flex size-12 items-center justify-center rounded-box bg-accent/15 text-accent"
+					>
 						<LucideGauge class="size-7" />
 					</div>
 					<div>
 						<h2 id="flex-heading" class="d-card-title">Pay as you go</h2>
-						<p class="text-base-content/75 text-sm">
+						<p class="text-sm text-base-content/75">
 							For workloads that spike or exceed bundle quotas, pay only for what you store and
 							transfer. Metering aligns with your object storage provider and region.
 						</p>
@@ -268,15 +275,15 @@
 				</div>
 				<ul class="flex flex-col gap-2 text-sm">
 					<li class="flex gap-2">
-						<LucideCheck class="text-success mt-0.5 size-4 shrink-0" />
+						<LucideCheck class="mt-0.5 size-4 shrink-0 text-success" />
 						<span>No long-term commit—scale storage month to month.</span>
 					</li>
 					<li class="flex gap-2">
-						<LucideCheck class="text-success mt-0.5 size-4 shrink-0" />
+						<LucideCheck class="mt-0.5 size-4 shrink-0 text-success" />
 						<span>Ideal when usage is unpredictable or project-based.</span>
 					</li>
 					<li class="flex gap-2">
-						<LucideCheck class="text-success mt-0.5 size-4 shrink-0" />
+						<LucideCheck class="mt-0.5 size-4 shrink-0 text-success" />
 						<span>Combine with any plan when you need burst capacity.</span>
 					</li>
 				</ul>
@@ -286,17 +293,17 @@
 			</div>
 		</div>
 
-		<div class="d-card bg-base-100 border-base-300 border shadow-sm">
+		<div class="d-card border border-base-300 bg-base-100 shadow-sm">
 			<div class="d-card-body gap-4">
 				<div class="flex items-start gap-3">
 					<div
-						class="bg-secondary/15 text-secondary rounded-box flex size-12 items-center justify-center"
+						class="flex size-12 items-center justify-center rounded-box bg-secondary/15 text-secondary"
 					>
 						<LucideBuilding2 class="size-7" />
 					</div>
 					<div>
 						<h2 class="d-card-title">Get a quote</h2>
-						<p class="text-base-content/75 text-sm">
+						<p class="text-sm text-base-content/75">
 							Need SSO, custom SLAs, dedicated support, or compliance documentation? We will scope
 							storage, residency, and support to match your organization.
 						</p>
@@ -304,15 +311,15 @@
 				</div>
 				<ul class="flex flex-col gap-2 text-sm">
 					<li class="flex gap-2">
-						<LucideCheck class="text-success mt-0.5 size-4 shrink-0" />
+						<LucideCheck class="mt-0.5 size-4 shrink-0 text-success" />
 						<span>Volume pricing and annual agreements.</span>
 					</li>
 					<li class="flex gap-2">
-						<LucideCheck class="text-success mt-0.5 size-4 shrink-0" />
+						<LucideCheck class="mt-0.5 size-4 shrink-0 text-success" />
 						<span>Private deployment and security review support.</span>
 					</li>
 					<li class="flex gap-2">
-						<LucideCheck class="text-success mt-0.5 size-4 shrink-0" />
+						<LucideCheck class="mt-0.5 size-4 shrink-0 text-success" />
 						<span>Dedicated success check-ins for rollout.</span>
 					</li>
 				</ul>
@@ -333,7 +340,7 @@
 			</p>
 		</div>
 		<div class="overflow-x-auto rounded-box border border-base-300 shadow-sm">
-			<table class="d-table d-table-zebra w-full min-w-[40rem]">
+			<table class="d-table w-full min-w-[40rem] d-table-zebra">
 				<thead>
 					<tr>
 						<th class="font-semibold">Capability</th>
@@ -358,7 +365,7 @@
 					<tr>
 						<td>Default for new users</td>
 						<td class="text-center">
-							<span class="d-badge d-badge-success d-badge-sm">Yes</span>
+							<span class="d-badge d-badge-sm d-badge-success">Yes</span>
 						</td>
 						<td class="text-center">—</td>
 						<td class="text-center">—</td>
@@ -386,7 +393,7 @@
 		</h2>
 		<div class="mx-auto flex w-full max-w-3xl flex-col gap-2">
 			{#each faq as item, i (item.q)}
-				<div class="d-collapse-arrow bg-base-200 d-collapse">
+				<div class="d-collapse-arrow d-collapse bg-base-200">
 					<input type="radio" name="pricing-faq" checked={i === 0} />
 					<div class="d-collapse-title font-medium">{item.q}</div>
 					<div class="d-collapse-content text-sm text-base-content/80">

@@ -126,7 +126,10 @@
 			const fallback = item.itemType === 'folder' ? `${item.name}.zip` : item.name;
 			await downloadDriveFileAsBlob(item.id, fallback);
 		} catch (e) {
-			toastService.addToast(e instanceof Error ? e.message : 'Download failed', StatusColorEnum.ERROR);
+			toastService.addToast(
+				e instanceof Error ? e.message : 'Download failed',
+				StatusColorEnum.ERROR
+			);
 		} finally {
 			busyId = null;
 		}
@@ -134,25 +137,26 @@
 </script>
 
 <div class="flex min-h-0 flex-1 flex-col gap-6 pb-8">
-	<p class="text-base-content/70 shrink-0 text-sm">
-		Files and folders others shared with your account appear here. Open folders to browse what you can access;
-		download files or folders (as ZIP) when you have access. Storage column shows where the owner stored the item.
+	<p class="shrink-0 text-sm text-base-content/70">
+		Files and folders others shared with your account appear here. Open folders to browse what you
+		can access; download files or folders (as ZIP) when you have access. Storage column shows where
+		the owner stored the item.
 	</p>
 
 	{#if loading && rows.length === 0}
-		<div class="d-skeleton h-40 w-full"></div>
+		<div class="h-40 w-full d-skeleton"></div>
 	{:else if loadError}
 		<div class="d-alert d-alert-error">
 			<span>{loadError}</span>
 		</div>
 	{/if}
 
-	<div class="d-card border-base-300 bg-base-100 flex min-h-0 flex-1 flex-col border shadow-sm">
+	<div class="d-card flex min-h-0 flex-1 flex-col border border-base-300 bg-base-100 shadow-sm">
 		<div class="d-card-body flex min-h-0 flex-1 flex-col p-0">
 			<div class="min-h-0 flex-1 overflow-auto">
-				<table class="d-table-zebra d-table w-full min-w-[44rem]">
+				<table class="d-table w-full min-w-[44rem] d-table-zebra">
 					<thead>
-						<tr class="border-base-300 border-b">
+						<tr class="border-b border-base-300">
 							<th class="min-w-[14rem]">Name</th>
 							<th class="w-28">Size</th>
 							<th class="w-36">Modified</th>
@@ -167,7 +171,7 @@
 								{#if data.currentFolder}
 									<a
 										href={backFolderHref}
-										class="text-base-content/80 hover:text-base-content inline-flex min-w-0 max-w-full items-center gap-2 normal-case no-underline hover:underline"
+										class="inline-flex max-w-full min-w-0 items-center gap-2 text-base-content/80 normal-case no-underline hover:text-base-content hover:underline"
 										aria-label="Back out of {data.currentFolder.name}"
 									>
 										<LucideArrowLeft class="size-3.5 shrink-0" aria-hidden="true" />
@@ -180,18 +184,22 @@
 						</tr>
 						{#if sortedRows.length === 0 && !loading}
 							<tr>
-								<td colspan="6" class="text-base-content/60 py-8 text-center">
+								<td colspan="6" class="py-8 text-center text-base-content/60">
 									Nothing shared for {storageProviderLabel(driveStorage.current)} yet.
 								</td>
 							</tr>
 						{:else}
 							{#each sortedRows as item (item.id)}
-								<tr class="hover:bg-info/50 border-l-4 transition-colors {fileLabelBorderClass(item.color)}">
+								<tr
+									class="border-l-4 transition-colors hover:bg-info/50 {fileLabelBorderClass(
+										item.color
+									)}"
+								>
 									<td>
 										{#if item.itemType === 'folder'}
 											<button
 												type="button"
-												class="inline-flex min-w-0 max-w-full items-center gap-2 text-left font-medium hover:underline"
+												class="inline-flex max-w-full min-w-0 items-center gap-2 text-left font-medium hover:underline"
 												onclick={() => enterFolder(item)}
 											>
 												<LucideFolder
@@ -201,26 +209,29 @@
 												<span class="truncate">{item.name}</span>
 											</button>
 										{:else}
-											<span class="inline-flex min-w-0 max-w-full items-center gap-2">
+											<span class="inline-flex max-w-full min-w-0 items-center gap-2">
 												<LucideFile
 													class="size-5 shrink-0 {fileLabelIconClass(item.color ?? 'base')}"
 													aria-hidden="true"
 												/>
-												<span class="font-medium truncate">{item.name}</span>
+												<span class="truncate font-medium">{item.name}</span>
 											</span>
 										{/if}
 									</td>
 									<td class="text-base-content/80 tabular-nums">{formatBytes(item.sizeBytes)}</td>
 									<td class="text-base-content/80">{item.updatedAt}</td>
 									<td class="text-sm">{storageProviderLabel(item.storageProvider)}</td>
-									<td class="text-base-content/80 max-w-[10rem] truncate text-sm" title={item.ownerName}>
+									<td
+										class="max-w-[10rem] truncate text-sm text-base-content/80"
+										title={item.ownerName}
+									>
 										{item.ownerName}
 									</td>
 									<td class="text-center">
 										<div class="flex items-center justify-center gap-1">
 											<button
 												type="button"
-												class="d-btn d-btn-ghost d-btn-sm d-btn-square"
+												class="d-btn d-btn-square d-btn-ghost d-btn-sm"
 												aria-label={item.itemType === 'folder'
 													? `Download ${item.name} as ZIP`
 													: `Download ${item.name}`}
@@ -229,10 +240,13 @@
 											>
 												<LucideDownload class="size-4" />
 											</button>
-											<div class="d-tooltip d-tooltip-top" data-tip="Only the owner can create a public link">
+											<div
+												class="d-tooltip d-tooltip-top"
+												data-tip="Only the owner can create a public link"
+											>
 												<button
 													type="button"
-													class="d-btn d-btn-ghost d-btn-sm d-btn-square"
+													class="d-btn d-btn-square d-btn-ghost d-btn-sm"
 													aria-label="Copy public link"
 													disabled
 												>

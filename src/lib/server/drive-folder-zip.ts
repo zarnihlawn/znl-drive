@@ -56,11 +56,7 @@ async function collectSubtreeRows(rootFolderId: string): Promise<SubtreeRow[]> {
 }
 
 /** Path inside the zip: relative to the folder root (no leading folder name). */
-function zipRelativePath(
-	rows: SubtreeRow[],
-	rootFolderId: string,
-	fileId: string
-): string {
+function zipRelativePath(rows: SubtreeRow[], rootFolderId: string, fileId: string): string {
 	const map = new Map(rows.map((r) => [r.id, r]));
 	const parts: string[] = [];
 	let id: string | null = fileId;

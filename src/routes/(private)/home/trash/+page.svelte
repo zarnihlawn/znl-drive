@@ -17,7 +17,13 @@
 	import { driveStorage } from '$lib/state/storage-provider.svelte';
 	import { toastService } from '$lib/service/toast.service.svelte';
 	import { formatBytes } from '$lib/tool/format-bytes';
-	import { LucideFile, LucideFolder, LucideLink, LucideRotateCcw, LucideTrash2 } from '@lucide/svelte';
+	import {
+		LucideFile,
+		LucideFolder,
+		LucideLink,
+		LucideRotateCcw,
+		LucideTrash2
+	} from '@lucide/svelte';
 
 	type ApiRow = {
 		id: string;
@@ -123,7 +129,10 @@
 			toastService.addToast('Restored to your drive', StatusColorEnum.SUCCESS);
 			await loadTrash();
 		} catch (e) {
-			toastService.addToast(e instanceof Error ? e.message : 'Restore failed', StatusColorEnum.ERROR);
+			toastService.addToast(
+				e instanceof Error ? e.message : 'Restore failed',
+				StatusColorEnum.ERROR
+			);
 		} finally {
 			busyId = null;
 		}
@@ -157,35 +166,35 @@
 </script>
 
 <div class="flex min-h-0 flex-1 flex-col gap-6 pb-8">
-	<div class="d-alert d-alert-warning shrink-0 shadow-sm">
+	<div class="d-alert shrink-0 d-alert-warning shadow-sm">
 		<div class="flex flex-col gap-1">
 			<span class="font-semibold">Trash retention</span>
 			<span class="text-sm">
-				Items stay here for <strong>{trashRetentionDays} days</strong>, then are removed automatically.
-				Restore anything you still need, or delete it forever now.
+				Items stay here for <strong>{trashRetentionDays} days</strong>, then are removed
+				automatically. Restore anything you still need, or delete it forever now.
 			</span>
 		</div>
 	</div>
 
-	<p class="text-base-content/70 shrink-0 text-sm">
-		List matches the storage provider in the header. Restored items return to their original location. Permanent
-		deletion frees storage immediately.
+	<p class="shrink-0 text-sm text-base-content/70">
+		List matches the storage provider in the header. Restored items return to their original
+		location. Permanent deletion frees storage immediately.
 	</p>
 
 	{#if loading && rows.length === 0}
-		<div class="d-skeleton h-40 w-full"></div>
+		<div class="h-40 w-full d-skeleton"></div>
 	{:else if loadError}
 		<div class="d-alert d-alert-error">
 			<span>{loadError}</span>
 		</div>
 	{/if}
 
-	<div class="d-card border-base-300 bg-base-100 flex min-h-0 flex-1 flex-col border shadow-sm">
+	<div class="d-card flex min-h-0 flex-1 flex-col border border-base-300 bg-base-100 shadow-sm">
 		<div class="d-card-body flex min-h-0 flex-1 flex-col p-0">
 			<div class="min-h-0 flex-1 overflow-auto">
-				<table class="d-table-zebra d-table w-full min-w-[56rem]">
+				<table class="d-table w-full min-w-[56rem] d-table-zebra">
 					<thead>
-						<tr class="border-base-300 border-b">
+						<tr class="border-b border-base-300">
 							<th class="min-w-[12rem]">Name</th>
 							<th class="w-28">Size</th>
 							<th class="w-36">Modified</th>
@@ -204,16 +213,20 @@
 						</tr>
 						{#if sortedRows.length === 0 && !loading}
 							<tr>
-								<td colspan="8" class="text-base-content/60 py-8 text-center">
+								<td colspan="8" class="py-8 text-center text-base-content/60">
 									Trash is empty for {storageProviderLabel(driveStorage.current)}.
 									<a href={resolve('/home')} class="link link-primary">Back to Home</a>
 								</td>
 							</tr>
 						{:else}
 							{#each sortedRows as item (item.id)}
-								<tr class="hover:bg-info/50 border-l-4 transition-colors {fileLabelBorderClass(item.color)}">
+								<tr
+									class="border-l-4 transition-colors hover:bg-info/50 {fileLabelBorderClass(
+										item.color
+									)}"
+								>
 									<td>
-										<span class="inline-flex min-w-0 max-w-full items-center gap-2">
+										<span class="inline-flex max-w-full min-w-0 items-center gap-2">
 											{#if item.itemType === 'folder'}
 												<LucideFolder
 													class="size-5 shrink-0 {fileLabelIconClass(item.color)}"
@@ -225,28 +238,34 @@
 													aria-hidden="true"
 												/>
 											{/if}
-											<span class="font-medium truncate">{item.name}</span>
+											<span class="truncate font-medium">{item.name}</span>
 										</span>
 									</td>
 									<td class="text-base-content/80 tabular-nums">{formatBytes(item.sizeBytes)}</td>
 									<td class="text-base-content/80">{item.updatedAt}</td>
 									<td class="text-base-content/80">{item.trashedAt}</td>
-									<td class="text-base-content/80 text-sm">{purgeLabel(item.purgeAt)}</td>
+									<td class="text-sm text-base-content/80">{purgeLabel(item.purgeAt)}</td>
 									<td class="text-sm">{storageProviderLabel(item.storageProvider)}</td>
-									<td class="text-base-content/80 max-w-[8rem] truncate text-sm" title={item.ownerName}>
+									<td
+										class="max-w-[8rem] truncate text-sm text-base-content/80"
+										title={item.ownerName}
+									>
 										{item.ownerName}
 									</td>
 									<td class="text-center">
 										<div class="flex flex-wrap items-center justify-center gap-1">
-											<div class="d-tooltip d-tooltip-top" data-tip="Restore the item to copy a link">
-												<button type="button" class="d-btn d-btn-ghost d-btn-sm gap-1" disabled>
+											<div
+												class="d-tooltip d-tooltip-top"
+												data-tip="Restore the item to copy a link"
+											>
+												<button type="button" class="d-btn gap-1 d-btn-ghost d-btn-sm" disabled>
 													<LucideLink class="size-3.5" aria-hidden="true" />
 													Link
 												</button>
 											</div>
 											<button
 												type="button"
-												class="d-btn d-btn-ghost d-btn-sm gap-1"
+												class="d-btn gap-1 d-btn-ghost d-btn-sm"
 												disabled={busyId === item.id}
 												onclick={() => void onRestore(item)}
 											>
@@ -255,7 +274,7 @@
 											</button>
 											<button
 												type="button"
-												class="d-btn d-btn-ghost d-btn-sm gap-1 text-error"
+												class="d-btn gap-1 text-error d-btn-ghost d-btn-sm"
 												disabled={busyId === item.id}
 												onclick={() => void onDeleteForever(item)}
 											>

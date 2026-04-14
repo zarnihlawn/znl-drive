@@ -41,9 +41,7 @@ export const GET: RequestHandler = async ({ request, params }) => {
 		const [share] = await db
 			.select({ id: MainFileShareSchema.id })
 			.from(MainFileShareSchema)
-			.where(
-				and(eq(MainFileShareSchema.fileId, id), eq(MainFileShareSchema.targetEmail, email))
-			)
+			.where(and(eq(MainFileShareSchema.fileId, id), eq(MainFileShareSchema.targetEmail, email)))
 			.limit(1);
 		if (share) {
 			allowed = true;

@@ -183,7 +183,10 @@
 			}
 			await refreshPublicLinkMeta(item.id);
 		} catch (e) {
-			toastService.addToast(e instanceof Error ? e.message : 'Public link update failed', StatusColorEnum.ERROR);
+			toastService.addToast(
+				e instanceof Error ? e.message : 'Public link update failed',
+				StatusColorEnum.ERROR
+			);
 			await refreshPublicLinkMeta(item.id);
 		} finally {
 			busyId = null;
@@ -456,11 +459,13 @@
 	async function onDownloadFile(item: DriveItem) {
 		closeFileActionsMenu();
 		try {
-			const fallback =
-				item.itemType === 'folder' ? `${item.name}.zip` : item.name;
+			const fallback = item.itemType === 'folder' ? `${item.name}.zip` : item.name;
 			await downloadDriveFileAsBlob(item.id, fallback);
 		} catch (e) {
-			toastService.addToast(e instanceof Error ? e.message : 'Download failed', StatusColorEnum.ERROR);
+			toastService.addToast(
+				e instanceof Error ? e.message : 'Download failed',
+				StatusColorEnum.ERROR
+			);
 		}
 	}
 
@@ -523,15 +528,16 @@
 </script>
 
 <div class="flex min-h-0 flex-1 flex-col gap-6 pb-8">
-	<p class="text-base-content/70 shrink-0 text-sm">
-		List is filtered by the storage provider in the header. Drag files from your computer onto the table to
-		upload with progress (same pipeline as <strong>NEW</strong>). Local storage writes under
-		<code class="text-xs">~/Documents/znl-drive/&lt;your-user-id&gt;/</code> (multipart handled on the server via
-		FormData; Express multer is not used in SvelteKit handlers).
+	<p class="shrink-0 text-sm text-base-content/70">
+		List is filtered by the storage provider in the header. Drag files from your computer onto the
+		table to upload with progress (same pipeline as <strong>NEW</strong>). Local storage writes
+		under
+		<code class="text-xs">~/Documents/znl-drive/&lt;your-user-id&gt;/</code> (multipart handled on the
+		server via FormData; Express multer is not used in SvelteKit handlers).
 	</p>
 
 	{#if loading && rows.length === 0}
-		<div class="d-skeleton h-40 w-full"></div>
+		<div class="h-40 w-full d-skeleton"></div>
 	{:else if loadError}
 		<div class="d-alert d-alert-error">
 			<span>{loadError}</span>
@@ -541,12 +547,14 @@
 	{#if dropUploading}
 		<div class="d-alert d-alert-info">
 			<span>Uploading… {dropProgress}%</span>
-			<progress class="d-progress d-progress-info mt-2 w-full" value={dropProgress} max="100"></progress>
+			<progress class="d-progress mt-2 w-full d-progress-info" value={dropProgress} max="100"
+			></progress>
 		</div>
 	{/if}
 
 	<div
-		class="d-card border-base-300 bg-base-100 flex min-h-0 flex-1 flex-col border shadow-sm transition-colors {fileDragDepth > 0
+		class="d-card flex min-h-0 flex-1 flex-col border border-base-300 bg-base-100 shadow-sm transition-colors {fileDragDepth >
+		0
 			? 'border-info/50 bg-info/5'
 			: ''}"
 		role="region"
@@ -560,9 +568,9 @@
 	>
 		<div class="d-card-body flex min-h-0 flex-1 flex-col p-0">
 			<div class="min-h-0 flex-1 overflow-auto" onscroll={closeFileActionsMenu}>
-				<table class="d-table-zebra d-table w-full min-w-[52rem]">
+				<table class="d-table w-full min-w-[52rem] d-table-zebra">
 					<thead>
-						<tr class="border-base-300 border-b">
+						<tr class="border-b border-base-300">
 							<th class="min-w-[14rem]">Name</th>
 							<th class="w-28">Size</th>
 							<th class="w-36">Modified</th>
@@ -576,7 +584,10 @@
 					<tbody>
 						{#if pinnedRows.length > 0}
 							<tr class="bg-base-200/60 hover:bg-base-200/60">
-								<td colspan="8" class="text-base-content/80 py-2 text-xs font-semibold tracking-wide uppercase">
+								<td
+									colspan="8"
+									class="py-2 text-xs font-semibold tracking-wide text-base-content/80 uppercase"
+								>
 									<span class="inline-flex items-center gap-2">
 										<LucidePin class="size-3.5" aria-hidden="true" />
 										Pinned
@@ -585,7 +596,9 @@
 							</tr>
 							{#each pinnedRows as item (item.id)}
 								<tr
-									class="hover:bg-info/50 border-l-4 transition-colors {fileLabelBorderClass(item.color)}"
+									class="border-l-4 transition-colors hover:bg-info/50 {fileLabelBorderClass(
+										item.color
+									)}"
 								>
 									{@render fileRowCells(item)}
 								</tr>
@@ -594,7 +607,10 @@
 
 						{#if starredRows.length > 0}
 							<tr class="bg-base-200/60 hover:bg-base-200/60">
-								<td colspan="8" class="text-base-content/80 py-2 text-xs font-semibold tracking-wide uppercase">
+								<td
+									colspan="8"
+									class="py-2 text-xs font-semibold tracking-wide text-base-content/80 uppercase"
+								>
 									<span class="inline-flex items-center gap-2">
 										<LucideStar class="size-3.5" aria-hidden="true" />
 										Starred
@@ -603,7 +619,9 @@
 							</tr>
 							{#each starredRows as item (item.id)}
 								<tr
-									class="hover:bg-info/50 border-l-4 transition-colors {fileLabelBorderClass(item.color)}"
+									class="border-l-4 transition-colors hover:bg-info/50 {fileLabelBorderClass(
+										item.color
+									)}"
 								>
 									{@render fileRowCells(item)}
 								</tr>
@@ -615,7 +633,7 @@
 								{#if data.currentFolder}
 									<a
 										href={backFolderHref}
-										class="text-base-content/80 hover:text-base-content inline-flex min-w-0 max-w-full items-center gap-2 normal-case no-underline hover:underline"
+										class="inline-flex max-w-full min-w-0 items-center gap-2 text-base-content/80 normal-case no-underline hover:text-base-content hover:underline"
 										aria-label="Back out of {data.currentFolder.name}"
 									>
 										<LucideArrowLeft class="size-3.5 shrink-0" aria-hidden="true" />
@@ -628,15 +646,17 @@
 						</tr>
 						{#if rootRows.length === 0 && !loading}
 							<tr>
-								<td colspan="8" class="text-base-content/60 py-8 text-center">
-									No files for {storageProviderLabel(driveStorage.current)} yet. Use <strong>NEW</strong> or
-									drag files here.
+								<td colspan="8" class="py-8 text-center text-base-content/60">
+									No files for {storageProviderLabel(driveStorage.current)} yet. Use
+									<strong>NEW</strong> or drag files here.
 								</td>
 							</tr>
 						{:else}
 							{#each otherRows as item (item.id)}
 								<tr
-									class="hover:bg-info/50 border-l-4 transition-colors {fileLabelBorderClass(item.color)}"
+									class="border-l-4 transition-colors hover:bg-info/50 {fileLabelBorderClass(
+										item.color
+									)}"
 								>
 									{@render fileRowCells(item)}
 								</tr>
@@ -654,7 +674,7 @@
 		id="file-actions-menu-float"
 		data-open-for={fileActionsMenuItem.id}
 		role="menu"
-		class="d-menu bg-base-100 fixed z-[999] m-0 min-w-[20rem] max-w-[90vw] rounded-box border border-base-200 p-2 shadow-md"
+		class="d-menu fixed z-[999] m-0 max-w-[90vw] min-w-[20rem] rounded-box border border-base-200 bg-base-100 p-2 shadow-md"
 		style="top: {fileActionsMenuPosition.top}px; left: {fileActionsMenuPosition.left}px;"
 	>
 		{#if fileActionsMenuItem.itemType === 'file' || fileActionsMenuItem.itemType === 'folder'}
@@ -691,8 +711,7 @@
 					role="menuitem"
 					class="justify-start gap-2"
 					disabled={busyId === fileActionsMenuItem.id || meta?.loading === true}
-					onclick={() =>
-						void onPublicLinkToggle(fileActionsMenuItem, meta?.public !== true)}
+					onclick={() => void onPublicLinkToggle(fileActionsMenuItem, meta?.public !== true)}
 				>
 					<LucideLink2 class="size-4 shrink-0" aria-hidden="true" />
 					{meta?.public === true ? 'Make private' : 'Make public'}
@@ -703,11 +722,9 @@
 					type="button"
 					role="menuitem"
 					class="justify-start gap-2"
-					disabled={
-						busyId === fileActionsMenuItem.id ||
+					disabled={busyId === fileActionsMenuItem.id ||
 						meta?.loading === true ||
-						meta?.public !== true
-					}
+						meta?.public !== true}
 					onclick={() => openCopyPublicLinkDialog(fileActionsMenuItem.id)}
 				>
 					<LucideCopy class="size-4 shrink-0" aria-hidden="true" />
@@ -716,7 +733,7 @@
 			</li>
 			{#if meta?.loading}
 				<li role="none">
-					<div class="text-base-content/50 px-2 py-1 text-xs">Loading link…</div>
+					<div class="px-2 py-1 text-xs text-base-content/50">Loading link…</div>
 				</li>
 			{/if}
 		{/key}
@@ -765,7 +782,7 @@
 			<span class="d-label-text">File name</span>
 			<input
 				type="text"
-				class="d-input d-input-bordered w-full"
+				class="d-input-bordered d-input w-full"
 				bind:value={draftName}
 				disabled={busyId !== null}
 				onkeydown={(e) => e.key === 'Enter' && void submitRename()}
@@ -793,20 +810,20 @@
 			Share {shareTarget?.itemType === 'folder' ? 'folder' : 'file'}
 		</h3>
 		{#if shareTarget}
-			<p class="text-base-content/70 py-2 text-sm">{shareTarget.name}</p>
+			<p class="py-2 text-sm text-base-content/70">{shareTarget.name}</p>
 		{/if}
 		<label class="d-form-control mt-2 w-full">
 			<span class="d-label-text">Recipient email</span>
 			<input
 				type="email"
-				class="d-input d-input-bordered w-full"
+				class="d-input-bordered d-input w-full"
 				bind:value={shareEmailDraft}
 				disabled={shareSubmitting}
 				placeholder="friend@example.com"
 				onkeydown={(e) => e.key === 'Enter' && void submitShare()}
 			/>
 		</label>
-		<p class="text-base-content/60 mt-2 text-xs">
+		<p class="mt-2 text-xs text-base-content/60">
 			{#if shareTarget?.itemType === 'folder'}
 				They can open this folder and its contents under Shared while logged in with that email.
 			{:else}
@@ -833,7 +850,7 @@
 	<div class="d-modal-box max-w-lg">
 		<h3 class="d-font-title text-lg font-bold">Copy public link</h3>
 		{#if copyPublicLinkDialog}
-			<p class="text-base-content/70 py-2 text-sm">{copyPublicLinkDialog.name}</p>
+			<p class="py-2 text-sm text-base-content/70">{copyPublicLinkDialog.name}</p>
 			<div class="mt-2 space-y-4">
 				<div class="d-form-control w-full">
 					<span class="d-label-text">Share page (full URL)</span>
@@ -841,7 +858,7 @@
 						<input
 							type="text"
 							readonly
-							class="d-input d-input-bordered w-full min-w-0 font-mono text-xs"
+							class="d-input-bordered d-input w-full min-w-0 font-mono text-xs"
 							value={copyPublicLinkDialog.shareUrl}
 						/>
 						<button
@@ -861,7 +878,7 @@
 							<input
 								type="text"
 								readonly
-								class="d-input d-input-bordered w-full min-w-0 font-mono text-xs"
+								class="d-input-bordered d-input w-full min-w-0 font-mono text-xs"
 								value={copyPublicLinkDialog.imageDirectUrl}
 							/>
 							<button
@@ -889,7 +906,7 @@
 	<div class="d-modal-box max-w-md">
 		<h3 class="d-font-title text-lg font-bold">Color</h3>
 		{#if colorTarget}
-			<p class="text-base-content/70 py-2 text-sm">{colorTarget.name}</p>
+			<p class="py-2 text-sm text-base-content/70">{colorTarget.name}</p>
 		{/if}
 		<div class="mt-3 flex flex-wrap gap-2">
 			{#each FILE_LABEL_COLORS as c (c)}
@@ -926,35 +943,32 @@
 		{#if item.itemType === 'folder'}
 			<button
 				type="button"
-				class="inline-flex min-w-0 max-w-full items-center gap-2 text-left font-medium hover:underline"
+				class="inline-flex max-w-full min-w-0 items-center gap-2 text-left font-medium hover:underline"
 				onclick={() => enterFolder(item)}
 			>
-				<LucideFolder
-					class="size-5 shrink-0 {fileLabelIconClass(item.color)}"
-					aria-hidden="true"
-				/>
+				<LucideFolder class="size-5 shrink-0 {fileLabelIconClass(item.color)}" aria-hidden="true" />
 				<span class="truncate">{item.name}</span>
 			</button>
 		{:else}
-			<span class="inline-flex min-w-0 max-w-full items-center gap-2">
+			<span class="inline-flex max-w-full min-w-0 items-center gap-2">
 				<LucideFile
 					class="size-5 shrink-0 {fileLabelIconClass(item.color ?? 'base')}"
 					aria-hidden="true"
 				/>
-				<span class="font-medium truncate">{item.name}</span>
+				<span class="truncate font-medium">{item.name}</span>
 			</span>
 		{/if}
 	</td>
 	<td class="text-base-content/80 tabular-nums">{formatBytes(item.sizeBytes)}</td>
 	<td class="text-base-content/80">{item.updatedAt}</td>
 	<td class="text-sm">{storageProviderLabel(item.storageProvider)}</td>
-	<td class="text-base-content/80 max-w-[10rem] truncate text-sm" title={item.ownerName}>
+	<td class="max-w-[10rem] truncate text-sm text-base-content/80" title={item.ownerName}>
 		{item.ownerName}
 	</td>
 	<td class="text-center">
 		<button
 			type="button"
-			class="d-btn d-btn-ghost d-btn-sm d-btn-square"
+			class="d-btn d-btn-square d-btn-ghost d-btn-sm"
 			aria-pressed={item.pinned}
 			aria-label={item.pinned ? 'Unpin' : 'Pin'}
 			disabled={busyId === item.id}
@@ -966,14 +980,14 @@
 	<td class="text-center">
 		<button
 			type="button"
-			class="d-btn d-btn-ghost d-btn-sm d-btn-square"
+			class="d-btn d-btn-square d-btn-ghost d-btn-sm"
 			aria-pressed={item.starred}
 			aria-label={item.starred ? 'Unstar' : 'Star'}
 			disabled={busyId === item.id}
 			onclick={() => void runPatch(item.id, { isStarred: !item.starred })}
 		>
 			<LucideStar
-				class="size-4 {item.starred ? 'text-warning fill-warning' : 'text-base-content/30'}"
+				class="size-4 {item.starred ? 'fill-warning text-warning' : 'text-base-content/30'}"
 			/>
 		</button>
 	</td>
@@ -981,7 +995,7 @@
 		<button
 			type="button"
 			id={`file-actions-btn-${item.id}`}
-			class="d-btn d-btn-ghost d-btn-sm d-btn-square m-1"
+			class="d-btn m-1 d-btn-square d-btn-ghost d-btn-sm"
 			aria-label="File actions"
 			aria-haspopup="menu"
 			aria-expanded={openFileActionsId === item.id}

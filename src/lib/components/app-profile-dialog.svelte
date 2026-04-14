@@ -193,17 +193,17 @@
 
 <dialog bind:this={dialogEl} class="d-modal" ontoggle={onDialogToggle}>
 	<div class="d-modal-box flex max-h-[min(90vh,44rem)] w-full max-w-4xl flex-col gap-0 p-0">
-		<div class="border-base-200 flex shrink-0 flex-col gap-3 border-b p-5 pb-4">
+		<div class="flex shrink-0 flex-col gap-3 border-b border-base-200 p-5 pb-4">
 			<h2 class="d-font-title text-lg font-bold">
 				<SettingsSearchHighlight text="Profile" query={profileSearch} />
 			</h2>
 			<label
-				class="d-input d-input-bordered flex w-full items-center gap-2 outline-none ring-0 focus-within:outline-none focus-within:ring-0 focus-within:ring-offset-0"
+				class="d-input-bordered d-input flex w-full items-center gap-2 ring-0 outline-none focus-within:ring-0 focus-within:ring-offset-0 focus-within:outline-none"
 			>
-				<LucideSearch class="text-base-content/50 size-4 shrink-0" aria-hidden="true" />
+				<LucideSearch class="size-4 shrink-0 text-base-content/50" aria-hidden="true" />
 				<input
 					type="search"
-					class="grow border-0 bg-transparent outline-none ring-0 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+					class="grow border-0 bg-transparent ring-0 outline-none focus:ring-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none"
 					placeholder="Search profile…"
 					autocomplete="off"
 					bind:value={profileSearch}
@@ -213,7 +213,7 @@
 
 		<div class="flex min-h-[20rem] flex-1">
 			<nav
-				class="border-base-200 bg-base-200/30 w-48 shrink-0 overflow-y-auto border-r p-2"
+				class="w-48 shrink-0 overflow-y-auto border-r border-base-200 bg-base-200/30 p-2"
 				aria-label="Profile sections"
 			>
 				<ul class="flex flex-col gap-0.5">
@@ -221,7 +221,7 @@
 						<li>
 							<button
 								type="button"
-								class="d-btn d-btn-ghost d-btn-sm w-full justify-start font-normal {visibleActiveSection ===
+								class="d-btn w-full justify-start font-normal d-btn-ghost d-btn-sm {visibleActiveSection ===
 								section.id
 									? 'd-btn-active'
 									: ''}"
@@ -233,7 +233,7 @@
 					{/each}
 				</ul>
 				{#if filteredSections.length === 0}
-					<p class="text-base-content/60 px-2 py-3 text-sm">
+					<p class="px-2 py-3 text-sm text-base-content/60">
 						<SettingsSearchHighlight
 							text="No profile sections match your search."
 							query={profileSearch}
@@ -244,14 +244,14 @@
 
 			<div class="min-w-0 flex-1 overflow-y-auto p-5">
 				{#if filteredSections.length === 0}
-					<p class="text-base-content/60 text-sm">
+					<p class="text-sm text-base-content/60">
 						<SettingsSearchHighlight text="Try a different search term." query={profileSearch} />
 					</p>
 				{:else if visibleActiveSection === 'about'}
 					<h3 class="mb-4 text-base font-semibold">
 						<SettingsSearchHighlight text="About" query={profileSearch} />
 					</h3>
-					<div class="text-base-content/80 max-w-xl space-y-4 text-sm leading-relaxed">
+					<div class="max-w-xl space-y-4 text-sm leading-relaxed text-base-content/80">
 						<p>
 							<SettingsSearchHighlight
 								text="ZNL-DRIVE is your personal cloud workspace for files, sharing, and storage."
@@ -296,7 +296,7 @@
 						</p>
 
 						<div class="flex flex-wrap items-center gap-3">
-							<span class="text-base-content/70 font-medium">Developer mode</span>
+							<span class="font-medium text-base-content/70">Developer mode</span>
 							<input
 								type="checkbox"
 								class="d-toggle d-toggle-primary d-toggle-sm"
@@ -308,18 +308,19 @@
 						</div>
 
 						{#if devMode}
-							<div class="border-base-200 bg-base-200/20 rounded-box border p-4">
+							<div class="rounded-box border border-base-200 bg-base-200/20 p-4">
 								<h4 class="mb-2 font-semibold">Using a key</h4>
-								<p class="text-base-content/70 mb-2 text-xs">
+								<p class="mb-2 text-xs text-base-content/70">
 									Send the full key in
-									<code class="bg-base-300/50 rounded px-1">Authorization: Bearer &lt;key&gt;</code>
+									<code class="rounded bg-base-300/50 px-1">Authorization: Bearer &lt;key&gt;</code>
 									or
-									<code class="bg-base-300/50 rounded px-1">X-API-Key: &lt;key&gt;</code>.
+									<code class="rounded bg-base-300/50 px-1">X-API-Key: &lt;key&gt;</code>.
 								</p>
-								<p class="text-base-content/60 text-xs">
+								<p class="text-xs text-base-content/60">
 									Prefix
-									<code class="bg-base-300/50 rounded px-1">znldv_</code>
-									— keep keys secret; anyone with the key can access your account via the API while developer mode stays on.
+									<code class="rounded bg-base-300/50 px-1">znldv_</code>
+									— keep keys secret; anyone with the key can access your account via the API while developer
+									mode stays on.
 								</p>
 							</div>
 
@@ -330,12 +331,12 @@
 										<input
 											type="text"
 											readonly
-											class="d-input d-input-bordered d-input-sm mt-2 w-full font-mono text-xs"
+											class="d-input-bordered d-input d-input-sm mt-2 w-full font-mono text-xs"
 											value={lastCreatedKey}
 										/>
 										<button
 											type="button"
-											class="d-btn d-btn-ghost d-btn-sm mt-2 gap-2"
+											class="d-btn mt-2 gap-2 d-btn-ghost d-btn-sm"
 											onclick={() => void copyText(lastCreatedKey!)}
 										>
 											<LucideCopy class="size-4" aria-hidden="true" />
@@ -350,14 +351,14 @@
 								<div class="mt-1 flex flex-col gap-2 sm:flex-row">
 									<input
 										type="text"
-										class="d-input d-input-bordered d-input-sm grow"
+										class="d-input-bordered d-input d-input-sm grow"
 										placeholder="e.g. CI backup script"
 										bind:value={newKeyName}
 										disabled={devBusy}
 									/>
 									<button
 										type="button"
-										class="d-btn d-btn-primary d-btn-sm shrink-0"
+										class="d-btn shrink-0 d-btn-sm d-btn-primary"
 										disabled={devBusy || !newKeyName.trim()}
 										onclick={() => void createApiKey()}
 									>
@@ -369,15 +370,15 @@
 							<div>
 								<h4 class="mb-2 font-semibold">Your API keys</h4>
 								{#if apiKeys.length === 0}
-									<p class="text-base-content/60 text-sm">No keys yet.</p>
+									<p class="text-sm text-base-content/60">No keys yet.</p>
 								{:else}
-									<ul class="divide-base-200 divide-y rounded-box border border-base-200">
+									<ul class="divide-y divide-base-200 rounded-box border border-base-200">
 										{#each apiKeys as k (k.id)}
 											<li class="flex flex-wrap items-center justify-between gap-2 px-3 py-2">
 												<div class="min-w-0">
 													<p class="font-medium">{k.name}</p>
-													<p class="text-base-content/60 font-mono text-xs">{k.masked}</p>
-													<p class="text-base-content/50 text-[11px]">
+													<p class="font-mono text-xs text-base-content/60">{k.masked}</p>
+													<p class="text-[11px] text-base-content/50">
 														{#if k.isRevoked}
 															Revoked
 														{:else if k.lastUsedAt}
@@ -390,7 +391,7 @@
 												{#if !k.isRevoked}
 													<button
 														type="button"
-														class="d-btn d-btn-ghost d-btn-xs text-error"
+														class="d-btn text-error d-btn-ghost d-btn-xs"
 														disabled={devBusy}
 														onclick={() => void revokeApiKey(k.id)}
 													>
@@ -403,12 +404,12 @@
 								{/if}
 							</div>
 						{:else}
-							<p class="text-base-content/60 text-sm">
+							<p class="text-sm text-base-content/60">
 								Enable developer mode to generate API keys and integrate with scripts or other apps.
 							</p>
 						{/if}
 
-						<div class="text-base-content/70 border-base-200 border-t pt-4 text-xs">
+						<div class="border-t border-base-200 pt-4 text-xs text-base-content/70">
 							<p class="mb-1">
 								<span class="font-medium">Stack:</span>
 								SvelteKit, Svelte 5, Tailwind, DaisyUI ·
@@ -420,7 +421,7 @@
 			</div>
 		</div>
 
-		<div class="border-base-200 d-modal-action shrink-0 border-t p-4">
+		<div class="d-modal-action shrink-0 border-t border-base-200 p-4">
 			<form method="dialog">
 				<button type="submit" class="d-btn">Close</button>
 			</form>

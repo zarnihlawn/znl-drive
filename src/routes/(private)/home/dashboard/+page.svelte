@@ -76,10 +76,12 @@
 			.attr('stroke', 'var(--color-base-100)')
 			.attr('stroke-width', 1);
 
-		arcs.append('title').text(
-			(d) =>
-				`${d.data.category}: ${formatBytes(d.data.bytes)} (${((100 * d.data.bytes) / totalBytes).toFixed(1)}%)`
-		);
+		arcs
+			.append('title')
+			.text(
+				(d) =>
+					`${d.data.category}: ${formatBytes(d.data.bytes)} (${((100 * d.data.bytes) / totalBytes).toFixed(1)}%)`
+			);
 
 		const legend = d3
 			.select(el)
@@ -235,7 +237,10 @@
 			.style('text-anchor', 'end')
 			.attr('font-size', 10);
 
-		g.append('g').call(d3.axisLeft(y).ticks(5).tickSizeOuter(0)).selectAll('text').attr('font-size', 10);
+		g.append('g')
+			.call(d3.axisLeft(y).ticks(5).tickSizeOuter(0))
+			.selectAll('text')
+			.attr('font-size', 10);
 
 		g.append('text')
 			.attr('x', innerW / 2)
@@ -306,14 +311,14 @@
 <div class="flex min-h-0 flex-1 flex-col gap-6 pb-8">
 	<div class="flex flex-col gap-1">
 		<h2 class="text-xl font-bold">Dashboard</h2>
-		<p class="text-base-content/70 text-sm">
-			Stats for <strong>{storageProviderLabel(driveStorage.current)}</strong> and your account. Change the
-			storage target in the header to refresh.
+		<p class="text-sm text-base-content/70">
+			Stats for <strong>{storageProviderLabel(driveStorage.current)}</strong> and your account. Change
+			the storage target in the header to refresh.
 		</p>
 	</div>
 
 	{#if loading && !stats}
-		<div class="d-skeleton h-40 w-full"></div>
+		<div class="h-40 w-full d-skeleton"></div>
 	{:else if loadError}
 		<div class="d-alert d-alert-error">
 			<span>{loadError}</span>
@@ -337,7 +342,9 @@
 			<div class="d-stats bg-base-100 shadow-sm">
 				<div class="d-stat">
 					<div class="d-stat-title">Storage used</div>
-					<div class="d-stat-value text-accent text-lg sm:text-2xl">{formatBytes(stats.summary.totalBytes)}</div>
+					<div class="d-stat-value text-lg text-accent sm:text-2xl">
+						{formatBytes(stats.summary.totalBytes)}
+					</div>
 					<div class="d-stat-desc">All active files</div>
 				</div>
 			</div>
@@ -375,26 +382,26 @@
 		</div>
 
 		<div class="grid gap-6 lg:grid-cols-2">
-			<div class="d-card border-base-300 bg-base-100 border shadow-sm">
+			<div class="d-card border border-base-300 bg-base-100 shadow-sm">
 				<div class="d-card-body">
 					<h3 class="d-card-title text-base">Storage by type</h3>
-					<p class="text-base-content/60 text-sm">Share of disk by MIME family (active files).</p>
+					<p class="text-sm text-base-content/60">Share of disk by MIME family (active files).</p>
 					<div bind:this={pieEl} class="w-full min-w-0"></div>
 				</div>
 			</div>
-			<div class="d-card border-base-300 bg-base-100 border shadow-sm">
+			<div class="d-card border border-base-300 bg-base-100 shadow-sm">
 				<div class="d-card-body">
 					<h3 class="d-card-title text-base">Files by type</h3>
-					<p class="text-base-content/60 text-sm">How many files fall in each category.</p>
+					<p class="text-sm text-base-content/60">How many files fall in each category.</p>
 					<div bind:this={barEl} class="w-full min-w-0 overflow-x-auto"></div>
 				</div>
 			</div>
 		</div>
 
-		<div class="d-card border-base-300 bg-base-100 border shadow-sm mb-10">
+		<div class="d-card mb-10 border border-base-300 bg-base-100 shadow-sm">
 			<div class="d-card-body">
 				<h3 class="d-card-title text-base">Activity (12 weeks)</h3>
-				<p class="text-base-content/60 text-sm">
+				<p class="text-sm text-base-content/60">
 					Count of active files whose <strong>last modified</strong> time falls in each week (UTC).
 				</p>
 				<div bind:this={lineEl} class="w-full min-w-0 overflow-x-auto"></div>

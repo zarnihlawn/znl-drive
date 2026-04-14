@@ -10,7 +10,11 @@ export function localPathNewFileAtRoot(userDir: string, fileId: string, safeName
 	return join(userDir, `${fileId}-${safeName}`);
 }
 
-export function localPathNewFileInsideFolder(parentFolderAbsPath: string, fileId: string, safeName: string): string {
+export function localPathNewFileInsideFolder(
+	parentFolderAbsPath: string,
+	fileId: string,
+	safeName: string
+): string {
 	return join(parentFolderAbsPath, `${fileId}-${safeName}`);
 }
 

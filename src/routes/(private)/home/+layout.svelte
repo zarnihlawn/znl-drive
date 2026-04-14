@@ -8,7 +8,11 @@
 	import { daisyDropdown } from '$lib/actions/daisy-dropdown';
 	import { uploadFilesWithProgress } from '$lib/client/upload-drive';
 	import { StatusColorEnum } from '$lib/model/enum/color.enum';
-	import { STORAGE_PROVIDERS, type StorageProviderId, storageProviderLabel } from '$lib/model/storage-provider';
+	import {
+		STORAGE_PROVIDERS,
+		type StorageProviderId,
+		storageProviderLabel
+	} from '$lib/model/storage-provider';
 	import { bumpDriveListRefresh } from '$lib/state/drive-refresh.svelte';
 	import {
 		driveStorage,
@@ -182,9 +186,7 @@
 		}
 
 		if (segments[0] === 'home' && segments.length >= 2) {
-			const crumbs: BreadcrumbItem[] = [
-				{ href: resolve('/home'), label: 'Home', isLast: false }
-			];
+			const crumbs: BreadcrumbItem[] = [{ href: resolve('/home'), label: 'Home', isLast: false }];
 			for (let i = 1; i < segments.length; i++) {
 				const isLast = i === segments.length - 1;
 				const pathToHere = '/' + segments.slice(0, i + 1).join('/');
@@ -250,7 +252,7 @@
 		<div class="d-navbar-end gap-3 sm:gap-4">
 			<a
 				href={localizeHref('/onboarding/docs')}
-				class="d-btn d-btn-ghost d-btn-sm hidden md:inline-flex"
+				class="d-btn hidden d-btn-ghost d-btn-sm md:inline-flex"
 				target="_blank"
 				rel="noopener noreferrer"
 			>
@@ -267,7 +269,7 @@
 				{/each}
 			</select>
 			<div class="d-dropdown d-dropdown-end" use:daisyDropdown>
-				<div tabindex="0" role="button" class="d-btn d-avatar d-btn-circle d-btn-ghost m-1">
+				<div tabindex="0" role="button" class="d-btn d-avatar m-1 d-btn-circle d-btn-ghost">
 					<div
 						class="flex h-10 w-10 items-center justify-center rounded-full ring-2 ring-primary ring-offset-2 ring-offset-base-100"
 					>
@@ -276,7 +278,7 @@
 				</div>
 				<ul
 					tabindex="-1"
-					class="d-dropdown-content d-menu bg-base-100 rounded-box z-1 mt-1 w-52 p-2 shadow-sm"
+					class="d-dropdown-content d-menu z-1 mt-1 w-52 rounded-box bg-base-100 p-2 shadow-sm"
 				>
 					<li>
 						<button
@@ -289,7 +291,11 @@
 						</button>
 					</li>
 					<li>
-						<button type="button" class="w-full text-left" onclick={() => appSettingsDialog?.open()}>
+						<button
+							type="button"
+							class="w-full text-left"
+							onclick={() => appSettingsDialog?.open()}
+						>
 							Settings
 						</button>
 					</li>
@@ -311,7 +317,7 @@
 					<div class="d-tooltip d-tooltip-bottom w-full" data-tip={newActionsTooltip}>
 						<button
 							type="button"
-							class="d-btn d-btn-wide d-btn-primary m-1 w-full max-w-full cursor-not-allowed opacity-50"
+							class="d-btn m-1 d-btn-wide w-full max-w-full cursor-not-allowed opacity-50 d-btn-primary"
 							disabled
 						>
 							<LucidePlus class="size-4 shrink-0" aria-hidden="true" />
@@ -320,22 +326,34 @@
 					</div>
 				{:else}
 					<div class="d-dropdown d-dropdown-bottom w-full" use:daisyDropdown>
-						<div tabindex="0" role="button" class="d-btn d-btn-wide d-btn-primary m-1 w-full max-w-full">
+						<div
+							tabindex="0"
+							role="button"
+							class="d-btn m-1 d-btn-wide w-full max-w-full d-btn-primary"
+						>
 							<LucidePlus class="size-4 shrink-0" aria-hidden="true" />
 							NEW
 						</div>
 						<ul
 							tabindex="-1"
-							class="d-dropdown-content d-menu bg-base-100 rounded-box z-1 mt-1 w-full min-w-[12rem] max-w-full p-2 shadow-sm"
+							class="d-dropdown-content d-menu z-1 mt-1 w-full max-w-full min-w-[12rem] rounded-box bg-base-100 p-2 shadow-sm"
 						>
 							<li>
-								<button type="button" class="w-full justify-start gap-2" onclick={openNewFolderDialog}>
+								<button
+									type="button"
+									class="w-full justify-start gap-2"
+									onclick={openNewFolderDialog}
+								>
 									<LucideFolderPlus class="size-4 shrink-0" aria-hidden="true" />
 									New folder
 								</button>
 							</li>
 							<li>
-								<button type="button" class="w-full justify-start gap-2" onclick={openUploadDialogFromMenu}>
+								<button
+									type="button"
+									class="w-full justify-start gap-2"
+									onclick={openUploadDialogFromMenu}
+								>
 									<LucideUpload class="size-4 shrink-0" aria-hidden="true" />
 									Upload file
 								</button>
@@ -347,25 +365,28 @@
 				<dialog bind:this={uploadDialog} class="d-modal">
 					<div class="d-modal-box max-w-lg">
 						<h3 class="d-font-title text-lg font-bold">Upload files</h3>
-						<p class="text-base-content/70 py-2 text-sm">
+						<p class="py-2 text-sm text-base-content/70">
 							Using storage: <strong>{storageProviderLabel(driveStorage.current)}</strong>
-							— local files go to <code class="text-xs">~/Documents/znl-drive/</code>; Tigris uses your
-							bucket.
+							— local files go to <code class="text-xs">~/Documents/znl-drive/</code>; Tigris uses
+							your bucket.
 						</p>
 						<input
 							bind:this={fileInputEl}
 							type="file"
 							multiple
-							class="d-file-input d-file-input-bordered w-full max-w-full"
+							class="d-file-input-bordered d-file-input w-full max-w-full"
 							onchange={onPickFiles}
 						/>
 						{#if pickerFiles.length > 0}
-							<p class="text-base-content/80 py-2 text-sm">{pickerFiles.length} file(s) selected</p>
+							<p class="py-2 text-sm text-base-content/80">{pickerFiles.length} file(s) selected</p>
 						{/if}
 						{#if uploading}
-							<progress class="d-progress d-progress-info mt-3 w-full" value={uploadProgress} max="100"
+							<progress
+								class="d-progress mt-3 w-full d-progress-info"
+								value={uploadProgress}
+								max="100"
 							></progress>
-							<p class="text-base-content/60 mt-1 text-xs">{uploadProgress}%</p>
+							<p class="mt-1 text-xs text-base-content/60">{uploadProgress}%</p>
 						{/if}
 						<div class="d-modal-action">
 							<form method="dialog">
@@ -386,14 +407,14 @@
 				<dialog bind:this={newFolderDialog} class="d-modal">
 					<div class="d-modal-box max-w-md">
 						<h3 class="d-font-title text-lg font-bold">New folder</h3>
-						<p class="text-base-content/70 py-2 text-sm">
+						<p class="py-2 text-sm text-base-content/70">
 							Storage: <strong>{storageProviderLabel(driveStorage.current)}</strong>
 						</p>
 						<label class="d-form-control w-full">
 							<span class="d-label-text">Folder name</span>
 							<input
 								type="text"
-								class="d-input d-input-bordered w-full"
+								class="d-input-bordered d-input w-full"
 								bind:value={newFolderName}
 								disabled={creatingFolder}
 								placeholder="My folder"
@@ -460,50 +481,50 @@
 			<!-- Main Content -->
 			<div class="flex min-h-0 min-w-0 flex-1 flex-col px-5">
 				<div class="flex shrink-0 justify-between rounded-lg bg-base-100 p-4">
-				<div>
-					<div class="mb-2 flex flex-wrap items-center gap-2">
-						{#if data.currentFolder}
-							<a class="d-btn d-btn-ghost d-btn-sm gap-1 shrink-0" href={upFolderHref}>
-								<LucideArrowLeft class="size-4" aria-hidden="true" />
-								Up
-							</a>
-						{/if}
-						<h1 class="text-2xl font-bold">{pageTitle}</h1>
+					<div>
+						<div class="mb-2 flex flex-wrap items-center gap-2">
+							{#if data.currentFolder}
+								<a class="d-btn shrink-0 gap-1 d-btn-ghost d-btn-sm" href={upFolderHref}>
+									<LucideArrowLeft class="size-4" aria-hidden="true" />
+									Up
+								</a>
+							{/if}
+							<h1 class="text-2xl font-bold">{pageTitle}</h1>
+						</div>
+						<nav class="d-breadcrumbs min-w-0 pr-2 italic" aria-label="Breadcrumb">
+							<ul>
+								{#each breadcrumbs as crumb, i (String(i) + (crumb.href ?? '') + crumb.label)}
+									<li>
+										{#if crumb.isLast}
+											<span aria-current="page">{crumb.label}</span>
+										{:else if crumb.href}
+											<a href={crumb.href}>{crumb.label}</a>
+										{:else}<nav class="d-breadcrumbs min-w-0 pr-2 italic" aria-label="Breadcrumb">
+												<ul>
+													{#each breadcrumbs as crumb, i (String(i) + (crumb.href ?? '') + crumb.label)}
+														<li>
+															{#if crumb.isLast}
+																<span aria-current="page">{crumb.label}</span>
+															{:else if crumb.href}
+																<a href={crumb.href}>{crumb.label}</a>
+															{:else}
+																<span>{crumb.label}</span>
+															{/if}
+														</li>
+													{/each}
+												</ul>
+											</nav>
+											<span>{crumb.label}</span>
+										{/if}
+									</li>
+								{/each}
+							</ul>
+						</nav>
 					</div>
-					<nav class="d-breadcrumbs min-w-0 pr-2 italic" aria-label="Breadcrumb">
-						<ul>
-							{#each breadcrumbs as crumb, i (String(i) + (crumb.href ?? '') + crumb.label)}
-								<li>
-									{#if crumb.isLast}
-										<span aria-current="page">{crumb.label}</span>
-									{:else if crumb.href}
-										<a href={crumb.href}>{crumb.label}</a>
-									{:else}<nav class="d-breadcrumbs min-w-0 pr-2 italic" aria-label="Breadcrumb">
-										<ul>
-											{#each breadcrumbs as crumb, i (String(i) + (crumb.href ?? '') + crumb.label)}
-												<li>
-													{#if crumb.isLast}
-														<span aria-current="page">{crumb.label}</span>
-													{:else if crumb.href}
-														<a href={crumb.href}>{crumb.label}</a>
-													{:else}
-														<span>{crumb.label}</span>
-													{/if}
-												</li>
-											{/each}
-										</ul>
-									</nav>
-										<span>{crumb.label}</span>
-									{/if}
-								</li>
-							{/each}
-						</ul>
-					</nav>
-				</div>
-					<div
-						class="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-6 gap-y-2 text-sm"
-					>
-						<span class="font-medium text-sm text-error">{storageProviderLabel(driveStorage.current)}</span>
+					<div class="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-6 gap-y-2 text-sm">
+						<span class="text-sm font-medium text-error"
+							>{storageProviderLabel(driveStorage.current)}</span
+						>
 					</div>
 				</div>
 				<div class="flex min-h-0 flex-1 flex-col pt-4">

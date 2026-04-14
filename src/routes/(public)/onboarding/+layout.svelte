@@ -16,15 +16,17 @@
 	<div class="d-navbar bg-base-100 shadow-sm">
 		<div class="d-navbar-start">
 			<div class="d-dropdown" use:daisyDropdown>
-				<div tabindex="0" role="button" class="d-btn d-btn-ghost m-1 lg:hidden">
+				<div tabindex="0" role="button" class="d-btn m-1 d-btn-ghost lg:hidden">
 					<LucideMenu class="h-5 w-5" />
 				</div>
 				<ul
 					tabindex="-1"
-					class="d-dropdown-content d-menu bg-base-100 rounded-box z-1 mt-1 w-52 p-2 shadow-sm"
+					class="d-dropdown-content d-menu z-1 mt-1 w-52 rounded-box bg-base-100 p-2 shadow-sm"
 				>
 					<li>
-						<a href={localizeHref('/onboarding/docs')} target="_blank" rel="noopener noreferrer">Docs</a>
+						<a href={localizeHref('/onboarding/docs')} target="_blank" rel="noopener noreferrer"
+							>Docs</a
+						>
 					</li>
 					<li><a href={resolve('/(public)/onboarding/pricing')}>Pricing</a></li>
 				</ul>
@@ -34,7 +36,9 @@
 		<div class="d-navbar-center hidden lg:flex">
 			<ul class="d-menu d-menu-horizontal gap-5 px-1">
 				<li>
-					<a href={localizeHref('/onboarding/docs')} target="_blank" rel="noopener noreferrer">Docs</a>
+					<a href={localizeHref('/onboarding/docs')} target="_blank" rel="noopener noreferrer"
+						>Docs</a
+					>
 				</li>
 				<li><a href={resolve('/(public)/onboarding/pricing')}>Pricing</a></li>
 			</ul>

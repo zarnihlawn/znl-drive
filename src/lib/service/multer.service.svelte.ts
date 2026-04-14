@@ -50,8 +50,7 @@ export class MulterService {
 				destination,
 				filename: (_req, file, cb) => {
 					const name =
-						resolveFilename?.(file.originalname) ??
-						`${randomUUID()}${extname(file.originalname)}`;
+						resolveFilename?.(file.originalname) ?? `${randomUUID()}${extname(file.originalname)}`;
 					cb(null, name);
 				}
 			}),
@@ -77,10 +76,7 @@ export class MulterService {
 	/**
 	 * Shorthand: memory storage + `fields(fields)` middleware.
 	 */
-	static fields(
-		fieldList: readonly { name: string; maxCount?: number }[],
-		options?: Options
-	) {
+	static fields(fieldList: readonly { name: string; maxCount?: number }[], options?: Options) {
 		return this.createMemory(options).fields(fieldList);
 	}
 

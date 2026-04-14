@@ -107,7 +107,9 @@ export const handleError: HandleServerError = ({ error, event, status, message }
 	}
 	const safe =
 		status === 404
-			? (typeof message === 'string' && message ? message : 'This page could not be found.')
+			? typeof message === 'string' && message
+				? message
+				: 'This page could not be found.'
 			: status === 503
 				? 'Service temporarily unavailable. Please try again in a moment.'
 				: 'Something went wrong. Please try again.';

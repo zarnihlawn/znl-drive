@@ -2,7 +2,10 @@ import { buildFolderZipBuffer } from '$lib/server/drive-folder-zip';
 import { readStoredBlob } from '$lib/server/drive-load';
 import { openFileBuffer } from '$lib/server/drive-seal';
 import { db } from '$lib/server/db';
-import { MainFilePublicLinkSchema, MainFileSchema } from '$lib/server/db/schema/main-schema/main.schema';
+import {
+	MainFilePublicLinkSchema,
+	MainFileSchema
+} from '$lib/server/db/schema/main-schema/main.schema';
 import { error } from '@sveltejs/kit';
 import { and, eq, gt, isNull, or } from 'drizzle-orm';
 import type { RequestHandler } from './$types';
@@ -45,7 +48,10 @@ export const GET: RequestHandler = async ({ params }) => {
 			and(
 				eq(MainFilePublicLinkSchema.token, token),
 				isNull(MainFilePublicLinkSchema.revokedAt),
-				or(isNull(MainFilePublicLinkSchema.expiresAt), gt(MainFilePublicLinkSchema.expiresAt, new Date())),
+				or(
+					isNull(MainFilePublicLinkSchema.expiresAt),
+					gt(MainFilePublicLinkSchema.expiresAt, new Date())
+				),
 				isNull(MainFileSchema.trashedAt)
 			)
 		)
@@ -101,4 +107,3 @@ export const GET: RequestHandler = async ({ params }) => {
 		}
 	});
 };
-

@@ -47,9 +47,7 @@ export const POST: RequestHandler = async ({ request, params }) => {
 	const [existing] = await db
 		.select({ id: MainFileShareSchema.id })
 		.from(MainFileShareSchema)
-		.where(
-			and(eq(MainFileShareSchema.fileId, id), eq(MainFileShareSchema.targetEmail, emailNorm))
-		)
+		.where(and(eq(MainFileShareSchema.fileId, id), eq(MainFileShareSchema.targetEmail, emailNorm)))
 		.limit(1);
 
 	if (existing) {

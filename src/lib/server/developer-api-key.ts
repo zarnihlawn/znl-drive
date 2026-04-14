@@ -12,7 +12,11 @@ function apiKeyPepper(): string {
 }
 
 export function hashDeveloperApiKeySecret(prefix: string, secret: string): string {
-	return createHmac('sha256', apiKeyPepper()).update(prefix).update('\0').update(secret).digest('hex');
+	return createHmac('sha256', apiKeyPepper())
+		.update(prefix)
+		.update('\0')
+		.update(secret)
+		.digest('hex');
 }
 
 function safeEqualHex(a: string, b: string): boolean {
@@ -83,10 +87,12 @@ export async function tryResolveUserFromDeveloperApiKey(
 }
 
 function randomPrefix12(): string {
-// 12 URL-safe chars
+	// 12 URL-safe chars
 	let s = '';
 	while (s.length < 12) {
-		s += randomBytes(9).toString('base64url').replace(/[^a-zA-Z0-9]/g, '');
+		s += randomBytes(9)
+			.toString('base64url')
+			.replace(/[^a-zA-Z0-9]/g, '');
 	}
 	return s.slice(0, 12);
 }

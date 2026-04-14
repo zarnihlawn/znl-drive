@@ -1,8 +1,3 @@
-<svelte:head>
-	<title>Developer · Documentation · ZNL-DRIVE</title>
-	<meta name="description" content="Authentication, REST API catalog, and errors for ZNL-DRIVE integrations." />
-</svelte:head>
-
 <script lang="ts">
 	import { localizeHref } from '$lib/paraglide/runtime';
 	import { LucideKeyRound, LucideListTree, LucideTriangleAlert } from '@lucide/svelte';
@@ -29,11 +24,19 @@
 	] as const;
 </script>
 
+<svelte:head>
+	<title>Developer · Documentation · ZNL-DRIVE</title>
+	<meta
+		name="description"
+		content="Authentication, REST API catalog, and errors for ZNL-DRIVE integrations."
+	/>
+</svelte:head>
+
 <div class="not-prose mx-auto max-w-4xl">
-	<h1 class="text-base-content mb-2 text-3xl font-bold">Developer</h1>
-	<p class="text-base-content/70 mb-10 text-lg">
-		Integrate with ZNL-DRIVE over HTTP: authenticate like the web app or with a developer API key, then
-		call the drive JSON and binary endpoints.
+	<h1 class="mb-2 text-3xl font-bold text-base-content">Developer</h1>
+	<p class="mb-10 text-lg text-base-content/70">
+		Integrate with ZNL-DRIVE over HTTP: authenticate like the web app or with a developer API key,
+		then call the drive JSON and binary endpoints.
 	</p>
 
 	<ul class="grid gap-4 sm:grid-cols-3">
@@ -41,11 +44,11 @@
 			<li>
 				<a
 					href={localizeHref(c.href)}
-					class="d-card bg-base-200/40 border-base-200 hover:border-secondary/40 flex h-full flex-col rounded-box border p-5 shadow-sm transition-colors"
+					class="d-card flex h-full flex-col rounded-box border border-base-200 bg-base-200/40 p-5 shadow-sm transition-colors hover:border-secondary/40"
 				>
-					<c.Icon class="text-secondary mb-3 size-9" aria-hidden="true" />
+					<c.Icon class="mb-3 size-9 text-secondary" aria-hidden="true" />
 					<h2 class="text-lg font-semibold">{c.title}</h2>
-					<p class="text-base-content/65 mt-2 text-sm">{c.desc}</p>
+					<p class="mt-2 text-sm text-base-content/65">{c.desc}</p>
 				</a>
 			</li>
 		{/each}

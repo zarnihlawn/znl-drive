@@ -1,8 +1,3 @@
-<svelte:head>
-	<title>User manual · Documentation · ZNL-DRIVE</title>
-	<meta name="description" content="How to use ZNL-DRIVE: files, sharing, trash, public links, and settings." />
-</svelte:head>
-
 <script lang="ts">
 	import { localizeHref } from '$lib/paraglide/runtime';
 	import {
@@ -67,9 +62,17 @@
 	] as const;
 </script>
 
+<svelte:head>
+	<title>User manual · Documentation · ZNL-DRIVE</title>
+	<meta
+		name="description"
+		content="How to use ZNL-DRIVE: files, sharing, trash, public links, and settings."
+	/>
+</svelte:head>
+
 <div class="not-prose mx-auto max-w-4xl">
-	<h1 class="text-base-content mb-2 text-3xl font-bold">User manual</h1>
-	<p class="text-base-content/70 mb-10 text-lg">
+	<h1 class="mb-2 text-3xl font-bold text-base-content">User manual</h1>
+	<p class="mb-10 text-lg text-base-content/70">
 		Learn how to use ZNL-DRIVE day to day: organize files, collaborate, and tune the app to your
 		preferences.
 	</p>
@@ -79,12 +82,12 @@
 			<li>
 				<a
 					href={localizeHref(p.href)}
-					class="d-card bg-base-200/40 border-base-200 hover:border-primary/30 flex h-full flex-row items-start gap-3 rounded-box border p-4 shadow-sm transition-colors"
+					class="d-card flex h-full flex-row items-start gap-3 rounded-box border border-base-200 bg-base-200/40 p-4 shadow-sm transition-colors hover:border-primary/30"
 				>
-					<p.Icon class="text-primary mt-0.5 size-8 shrink-0" aria-hidden="true" />
+					<p.Icon class="mt-0.5 size-8 shrink-0 text-primary" aria-hidden="true" />
 					<div>
 						<h2 class="font-semibold">{p.title}</h2>
-						<p class="text-base-content/65 mt-1 text-sm">{p.desc}</p>
+						<p class="mt-1 text-sm text-base-content/65">{p.desc}</p>
 					</div>
 				</a>
 			</li>

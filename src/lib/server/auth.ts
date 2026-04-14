@@ -21,7 +21,9 @@ const isBuildStep = process.env.npm_lifecycle_event === 'build' || process.env.B
 
 const baseURL =
 	(typeof env.ORIGIN === 'string' && env.ORIGIN.trim() ? env.ORIGIN.trim() : undefined) ??
-	(typeof process.env.ORIGIN === 'string' && process.env.ORIGIN.trim() ? process.env.ORIGIN.trim() : undefined) ??
+	(typeof process.env.ORIGIN === 'string' && process.env.ORIGIN.trim()
+		? process.env.ORIGIN.trim()
+		: undefined) ??
 	(isBuildStep ? 'http://localhost:5173' : undefined);
 
 const secret =

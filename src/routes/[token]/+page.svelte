@@ -39,14 +39,14 @@
 		<div class="d-card-body gap-5">
 			<div class="flex flex-col gap-1">
 				<h1 class="text-xl font-bold break-words">{share?.item.name ?? 'Shared item'}</h1>
-				<p class="text-base-content/70 text-sm">Public link. Download is available below.</p>
+				<p class="text-sm text-base-content/70">Public link. Download is available below.</p>
 				{#if fullPageUrl}
 					<div class="space-y-1">
-						<div class="text-base-content/60 text-xs">This page (full URL)</div>
+						<div class="text-xs text-base-content/60">This page (full URL)</div>
 						<input
 							type="text"
 							readonly
-							class="d-input d-input-bordered d-input-sm w-full font-mono text-xs"
+							class="d-input-bordered d-input d-input-sm w-full font-mono text-xs"
 							value={fullPageUrl}
 						/>
 					</div>
@@ -80,7 +80,7 @@
 							class="max-h-[70vh] w-full object-contain"
 							loading="lazy"
 						/>
-						<p class="text-base-content/60 mt-2 text-xs break-all">
+						<p class="mt-2 text-xs break-all text-base-content/60">
 							Direct file URL:
 							<a class="d-link d-link-primary" href={rawUrl} target="_blank" rel="noreferrer"
 								>{directFileAbsolute || rawUrl}</a

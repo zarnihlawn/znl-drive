@@ -22,7 +22,7 @@
 
 <!-- Toast Component when no dialog is open (Learn Toast Service To Use) -->
 {#if ToastState.length > 0}
-	<div class="d-toast d-toast-bottom d-toast-end">
+	<div class="d-toast d-toast-end d-toast-bottom">
 		{#each ToastState as toast (toast.id)}
 			<div>
 				<div class="d-alert d-alert-{toast.type}">
@@ -30,5 +30,5 @@
 				</div>
 			</div>
 		{/each}
-		</div>
+	</div>
 {/if}

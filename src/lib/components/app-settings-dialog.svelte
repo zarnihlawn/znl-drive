@@ -81,17 +81,17 @@
 
 <dialog bind:this={dialogEl} class="d-modal" ontoggle={onDialogToggle}>
 	<div class="d-modal-box flex max-h-[min(90vh,44rem)] w-full max-w-4xl flex-col gap-0 p-0">
-		<div class="border-base-200 flex shrink-0 flex-col gap-3 border-b p-5 pb-4">
+		<div class="flex shrink-0 flex-col gap-3 border-b border-base-200 p-5 pb-4">
 			<h2 class="d-font-title text-lg font-bold">
 				<SettingsSearchHighlight text="Settings" query={settingsSearch} />
 			</h2>
 			<label
-				class="d-input d-input-bordered flex w-full items-center gap-2 outline-none ring-0 focus-within:outline-none focus-within:ring-0 focus-within:ring-offset-0"
+				class="d-input-bordered d-input flex w-full items-center gap-2 ring-0 outline-none focus-within:ring-0 focus-within:ring-offset-0 focus-within:outline-none"
 			>
-				<LucideSearch class="text-base-content/50 size-4 shrink-0" aria-hidden="true" />
+				<LucideSearch class="size-4 shrink-0 text-base-content/50" aria-hidden="true" />
 				<input
 					type="search"
-					class="grow border-0 bg-transparent outline-none ring-0 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+					class="grow border-0 bg-transparent ring-0 outline-none focus:ring-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none"
 					placeholder="Search settings…"
 					autocomplete="off"
 					bind:value={settingsSearch}
@@ -101,7 +101,7 @@
 
 		<div class="flex min-h-[20rem] flex-1">
 			<nav
-				class="border-base-200 bg-base-200/30 w-48 shrink-0 overflow-y-auto border-r p-2"
+				class="w-48 shrink-0 overflow-y-auto border-r border-base-200 bg-base-200/30 p-2"
 				aria-label="Settings categories"
 			>
 				<ul class="flex flex-col gap-0.5">
@@ -109,7 +109,7 @@
 						<li>
 							<button
 								type="button"
-								class="d-btn d-btn-ghost d-btn-sm w-full justify-start font-normal {visibleActiveSection ===
+								class="d-btn w-full justify-start font-normal d-btn-ghost d-btn-sm {visibleActiveSection ===
 								section.id
 									? 'd-btn-active'
 									: ''}"
@@ -121,7 +121,7 @@
 					{/each}
 				</ul>
 				{#if filteredSections.length === 0}
-					<p class="text-base-content/60 px-2 py-3 text-sm">
+					<p class="px-2 py-3 text-sm text-base-content/60">
 						<SettingsSearchHighlight text="No settings match your search." query={settingsSearch} />
 					</p>
 				{/if}
@@ -129,7 +129,7 @@
 
 			<div class="min-w-0 flex-1 overflow-y-auto p-5">
 				{#if filteredSections.length === 0}
-					<p class="text-base-content/60 text-sm">
+					<p class="text-sm text-base-content/60">
 						<SettingsSearchHighlight text="Try a different search term." query={settingsSearch} />
 					</p>
 				{:else if visibleActiveSection === 'appearance'}
@@ -142,7 +142,7 @@
 								<SettingsSearchHighlight text="Theme" query={settingsSearch} />
 							</span>
 							<select
-								class="d-select d-select-bordered w-full"
+								class="d-select-bordered d-select w-full"
 								bind:value={draftTheme}
 								onchange={() => applyTheme(draftTheme)}
 							>
@@ -163,7 +163,7 @@
 								<SettingsSearchHighlight text="Font" query={settingsSearch} />
 							</span>
 							<select
-								class="d-select d-select-bordered w-full"
+								class="d-select-bordered d-select w-full"
 								bind:value={draftFont}
 								onchange={() => applyFont(draftFont)}
 							>
@@ -178,7 +178,7 @@
 								<SettingsSearchHighlight text="Text size" query={settingsSearch} />
 							</span>
 							<select
-								class="d-select d-select-bordered w-full"
+								class="d-select-bordered d-select w-full"
 								value={String(draftFontScale)}
 								onchange={(e) => {
 									const v = parseFloat((e.currentTarget as HTMLSelectElement).value);
@@ -202,12 +202,12 @@
 					<h3 class="mb-4 text-base font-semibold">
 						<SettingsSearchHighlight text="Language" query={settingsSearch} />
 					</h3>
-					<label class="d-form-control max-w-xl w-full">
+					<label class="d-form-control w-full max-w-xl">
 						<span class="d-label-text">
 							<SettingsSearchHighlight text="Interface language" query={settingsSearch} />
 						</span>
 						<select
-							class="d-select d-select-bordered w-full"
+							class="d-select-bordered d-select w-full"
 							bind:value={draftLocale}
 							onchange={() => {
 								setLocale(draftLocale as (typeof locales)[number]);
@@ -228,7 +228,7 @@
 					<h3 class="mb-4 text-base font-semibold">
 						<SettingsSearchHighlight text="General" query={settingsSearch} />
 					</h3>
-					<p class="text-base-content/70 max-w-xl text-sm leading-relaxed">
+					<p class="max-w-xl text-sm leading-relaxed text-base-content/70">
 						<SettingsSearchHighlight
 							text="Additional preferences (notifications, defaults, and account options) can go here later."
 							query={settingsSearch}
@@ -238,7 +238,7 @@
 			</div>
 		</div>
 
-		<div class="border-base-200 d-modal-action shrink-0 border-t p-4">
+		<div class="d-modal-action shrink-0 border-t border-base-200 p-4">
 			<form method="dialog">
 				<button type="submit" class="d-btn">Close</button>
 			</form>

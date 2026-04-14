@@ -10,7 +10,12 @@ function postChunk(
 	onPartProgress: (loaded: number, total: number) => void,
 	fileTotal: number,
 	loadedSoFar: number
-): Promise<{ uploadId?: string; done?: boolean; ok?: boolean; created?: { id: string; name: string }[] }> {
+): Promise<{
+	uploadId?: string;
+	done?: boolean;
+	ok?: boolean;
+	created?: { id: string; name: string }[];
+}> {
 	return new Promise((resolve, reject) => {
 		const xhr = new XMLHttpRequest();
 		xhr.upload.addEventListener('progress', (e) => {
@@ -41,7 +46,10 @@ function postChunk(
 	});
 }
 
-function postMultipart(fd: FormData, onProgress: (loaded: number, total: number) => void): Promise<unknown> {
+function postMultipart(
+	fd: FormData,
+	onProgress: (loaded: number, total: number) => void
+): Promise<unknown> {
 	return new Promise((resolve, reject) => {
 		const xhr = new XMLHttpRequest();
 		xhr.upload.addEventListener('progress', (e) => {
@@ -96,12 +104,7 @@ async function uploadOneFileChunked(
 			if (parentFolderId) fd.append('parentId', parentFolderId);
 		}
 
-		const res = await postChunk(
-			fd,
-			onProgress,
-			file.size,
-			loaded
-		);
+		const res = await postChunk(fd, onProgress, file.size, loaded);
 		if (res.uploadId) uploadId = res.uploadId;
 		loaded += end - start;
 		onProgress(loaded, file.size);

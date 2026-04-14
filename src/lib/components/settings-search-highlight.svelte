@@ -8,8 +8,9 @@
 
 {#each parts as part, i (i)}
 	{#if part.match}
-		<mark class="bg-warning/45 text-base-content rounded-sm px-0.5 [box-decoration-break:clone]"
-			>{part.text}</mark>
+		<mark class="rounded-sm bg-warning/45 [box-decoration-break:clone] px-0.5 text-base-content"
+			>{part.text}</mark
+		>
 	{:else}
 		{part.text}
 	{/if}

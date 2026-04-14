@@ -4,9 +4,9 @@ ZNL-DRIVE can target more than one storage backend. The list is defined in code 
 
 ## Available targets
 
-| Id | Label |
-| --- | --- |
-| `local` | Local |
+| Id       | Label  |
+| -------- | ------ |
+| `local`  | Local  |
 | `tigris` | Tigris |
 
 ## Switching targets

@@ -28,7 +28,7 @@ The drive layer resolves the key to your user via `tryResolveUserFromDeveloperAp
 
 ## Public and cron
 
-- **`/api/public/**`** — no authentication; guarded by link token validity.
+- **`/api/public/**`\*\* — no authentication; guarded by link token validity.
 - **`POST /api/cron/purge-trash`** — `Authorization: Bearer <CRON_SECRET>`, not a user session.
 
 See the [REST API reference](./rest-api) for the full table.

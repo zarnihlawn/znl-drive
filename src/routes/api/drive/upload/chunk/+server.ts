@@ -15,7 +15,8 @@ export const POST: RequestHandler = async ({ request }) => {
 	const chunkIndex = Number(formData.get('chunkIndex'));
 	const chunkCount = Number(formData.get('chunkCount'));
 	const uploadIdRaw = formData.get('uploadId');
-	const uploadId = typeof uploadIdRaw === 'string' && uploadIdRaw.trim() !== '' ? uploadIdRaw.trim() : null;
+	const uploadId =
+		typeof uploadIdRaw === 'string' && uploadIdRaw.trim() !== '' ? uploadIdRaw.trim() : null;
 
 	const chunkEntry = formData.get('chunk');
 	if (!(chunkEntry instanceof File)) throw error(400, 'Missing chunk');
@@ -89,7 +90,11 @@ export const POST: RequestHandler = async ({ request }) => {
 		return json({ ok: true, done: true, uploadId: sid, created: [created] });
 	} catch (e) {
 		const msg = e instanceof Error ? e.message : 'Chunk upload failed';
-		if (msg.includes('Invalid chunk') || msg.includes('session') || msg.includes('Expected chunk')) {
+		if (
+			msg.includes('Invalid chunk') ||
+			msg.includes('session') ||
+			msg.includes('Expected chunk')
+		) {
 			throw error(400, msg);
 		}
 		if (msg.includes('too large')) throw error(413, msg);

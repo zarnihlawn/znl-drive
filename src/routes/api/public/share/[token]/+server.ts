@@ -1,5 +1,8 @@
 import { db } from '$lib/server/db';
-import { MainFilePublicLinkSchema, MainFileSchema } from '$lib/server/db/schema/main-schema/main.schema';
+import {
+	MainFilePublicLinkSchema,
+	MainFileSchema
+} from '$lib/server/db/schema/main-schema/main.schema';
 import { error, json } from '@sveltejs/kit';
 import { and, eq, isNull, or, gt } from 'drizzle-orm';
 import type { RequestHandler } from './$types';
@@ -28,7 +31,10 @@ export const GET: RequestHandler = async ({ params }) => {
 			and(
 				eq(MainFilePublicLinkSchema.token, token),
 				isNull(MainFilePublicLinkSchema.revokedAt),
-				or(isNull(MainFilePublicLinkSchema.expiresAt), gt(MainFilePublicLinkSchema.expiresAt, new Date())),
+				or(
+					isNull(MainFilePublicLinkSchema.expiresAt),
+					gt(MainFilePublicLinkSchema.expiresAt, new Date())
+				),
 				isNull(MainFileSchema.trashedAt)
 			)
 		)
@@ -51,4 +57,3 @@ export const GET: RequestHandler = async ({ params }) => {
 		}
 	});
 };
-

@@ -78,7 +78,9 @@ export const POST: RequestHandler = async ({ request }) => {
 			? tigrisKeyNewSubfolder(parentFolder.path, id)
 			: tigrisKeyNewFolderAtRoot(userId, id);
 		try {
-			await TigrisUtil.upload(objectKey, Buffer.alloc(0), { contentType: 'application/octet-stream' });
+			await TigrisUtil.upload(objectKey, Buffer.alloc(0), {
+				contentType: 'application/octet-stream'
+			});
 		} catch (e) {
 			console.error('[drive/folders] Tigris upload failed', e);
 			throw error(502, 'Tigris folder create failed. Check TIGRIS_* env vars and bucket access.');

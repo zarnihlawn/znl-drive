@@ -23,7 +23,6 @@ export const SETTINGS_SECTIONS: readonly SettingsSectionDef[] = [
 	{
 		id: 'general',
 		title: 'General',
-		searchBlob:
-			'general account preferences notifications storage defaults profile workspace about'
+		searchBlob: 'general account preferences notifications storage defaults profile workspace about'
 	}
 ];

@@ -1,7 +1,10 @@
 import { requireApiSession } from '$lib/server/require-api-session';
 import { appAbsoluteUrlFromRequest } from '$lib/server/app-absolute-url';
 import { db } from '$lib/server/db';
-import { MainFilePublicLinkSchema, MainFileSchema } from '$lib/server/db/schema/main-schema/main.schema';
+import {
+	MainFilePublicLinkSchema,
+	MainFileSchema
+} from '$lib/server/db/schema/main-schema/main.schema';
 import { error, json } from '@sveltejs/kit';
 import { and, eq, isNull } from 'drizzle-orm';
 import { randomBytes } from 'node:crypto';

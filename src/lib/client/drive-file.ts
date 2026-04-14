@@ -10,7 +10,10 @@ export type PatchDriveFileBody = {
 	trashed?: boolean;
 };
 
-export async function patchDriveFile(id: string, body: PatchDriveFileBody): Promise<{ ok: boolean }> {
+export async function patchDriveFile(
+	id: string,
+	body: PatchDriveFileBody
+): Promise<{ ok: boolean }> {
 	const r = await fetchWithSession(resolveHref(`/api/drive/files/${id}`), {
 		method: 'PATCH',
 		headers: { 'content-type': 'application/json' },

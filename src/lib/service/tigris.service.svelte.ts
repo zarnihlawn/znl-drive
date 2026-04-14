@@ -45,11 +45,7 @@ type PutOptions = {
 	contentDisposition?: 'inline' | 'attachment';
 	multipart?: boolean;
 	abortController?: AbortController;
-	onUploadProgress?: (args: {
-		loaded: number;
-		total?: number;
-		percentage?: number;
-	}) => void;
+	onUploadProgress?: (args: { loaded: number; total?: number; percentage?: number }) => void;
 	config?: TigrisStorageConfig;
 };
 
@@ -173,25 +169,16 @@ export class TigrisUtil {
 	static getDefaultConfig(): TigrisStorageConfig {
 		return {
 			bucket: this.readPrivateEnv('TIGRIS_STORAGE_BUCKET', 'TIGRIS_BUCKET'),
-			accessKeyId: this.readPrivateEnv(
-				'TIGRIS_STORAGE_ACCESS_KEY_ID',
-				'TIGRIS_ACCESS_KEY'
-			),
-			secretAccessKey: this.readPrivateEnv(
-				'TIGRIS_STORAGE_SECRET_ACCESS_KEY',
-				'TIGRIS_SECRET_KEY'
-			),
-			endpoint:
-				this.readPrivateEnv('TIGRIS_STORAGE_ENDPOINT') ?? 'https://t3.storage.dev'
+			accessKeyId: this.readPrivateEnv('TIGRIS_STORAGE_ACCESS_KEY_ID', 'TIGRIS_ACCESS_KEY'),
+			secretAccessKey: this.readPrivateEnv('TIGRIS_STORAGE_SECRET_ACCESS_KEY', 'TIGRIS_SECRET_KEY'),
+			endpoint: this.readPrivateEnv('TIGRIS_STORAGE_ENDPOINT') ?? 'https://t3.storage.dev'
 		};
 	}
 
 	/**
 	 * Helper to merge default config with per‑call overrides.
 	 */
-	private static mergeConfig(
-		override?: TigrisStorageConfig
-	): TigrisStorageConfig | undefined {
+	private static mergeConfig(override?: TigrisStorageConfig): TigrisStorageConfig | undefined {
 		const base = this.getDefaultConfig();
 		return { ...base, ...override };
 	}
@@ -229,8 +216,7 @@ export class TigrisUtil {
 		file: Express.Multer.File,
 		options?: PutOptions & { configOverride?: TigrisStorageConfig }
 	): Promise<PutResponse> {
-		const contentType =
-			options?.contentType ?? file.mimetype ?? 'application/octet-stream';
+		const contentType = options?.contentType ?? file.mimetype ?? 'application/octet-stream';
 
 		if (file.buffer !== undefined) {
 			return this.upload(objectKey, file.buffer, { ...options, contentType });
@@ -339,11 +325,10 @@ export class TigrisUtil {
 		options?: ListOptions & { configOverride?: TigrisStorageConfig }
 	): Promise<ListResponse> {
 		const { configOverride, ...rest } = options ?? {};
-		const res: TigrisStorageResponse<ListResponse, Error> =
-			(await list({
-				...rest,
-				config: this.mergeConfig(configOverride)
-			})) as unknown as TigrisStorageResponse<ListResponse, Error>;
+		const res: TigrisStorageResponse<ListResponse, Error> = (await list({
+			...rest,
+			config: this.mergeConfig(configOverride)
+		})) as unknown as TigrisStorageResponse<ListResponse, Error>;
 
 		if (res.error) {
 			throw res.error;
@@ -421,14 +406,10 @@ export class TigrisUtil {
 		}
 	): Promise<ListBucketsResponse> {
 		const { configOverride, ...rest } = options ?? {};
-		const res: TigrisStorageResponse<ListBucketsResponse, Error> =
-			(await listBuckets({
-				...rest,
-				config: this.mergeConfig(configOverride)
-			})) as unknown as TigrisStorageResponse<
-				ListBucketsResponse,
-				Error
-			>;
+		const res: TigrisStorageResponse<ListBucketsResponse, Error> = (await listBuckets({
+			...rest,
+			config: this.mergeConfig(configOverride)
+		})) as unknown as TigrisStorageResponse<ListBucketsResponse, Error>;
 
 		if (res.error) {
 			throw res.error;
@@ -450,10 +431,7 @@ export class TigrisUtil {
 		const res = (await getPresignedUrl(path, {
 			...rest,
 			config: this.mergeConfig(configOverride)
-		})) as unknown as TigrisStorageResponse<
-			GetPresignedUrlResponse,
-			Error
-		>;
+		})) as unknown as TigrisStorageResponse<GetPresignedUrlResponse, Error>;
 
 		if (res.error) {
 			throw res.error;

@@ -1,12 +1,23 @@
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
-import { boolean, index, integer, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import {
+	boolean,
+	index,
+	integer,
+	pgTable,
+	text,
+	timestamp,
+	uniqueIndex,
+	uuid
+} from 'drizzle-orm/pg-core';
 import { MasterStorageProviderSchema } from '../master-schema/master.schema';
 import { createUpdateTimestamp, uuidSchemaWrapper } from '../schema-wrapper';
 
 export const MainFileSchema = pgTable('main_file', {
 	...uuidSchemaWrapper,
 	ownerId: text('owner_id').notNull(),
-	parentId: uuid('parent_id').references((): AnyPgColumn => MainFileSchema.id, { onDelete: 'cascade' }),
+	parentId: uuid('parent_id').references((): AnyPgColumn => MainFileSchema.id, {
+		onDelete: 'cascade'
+	}),
 	itemType: text('item_type').notNull().default('file'),
 	isPinned: boolean('is_pinned').notNull().default(false),
 	isStarred: boolean('is_starred').notNull().default(false),

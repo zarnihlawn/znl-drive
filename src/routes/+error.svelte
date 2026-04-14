@@ -31,24 +31,24 @@
 	}
 </script>
 
-<div class="bg-base-200 flex min-h-screen flex-col items-center justify-center px-4 py-16">
-	<div class="d-card border-base-300 bg-base-100 w-full max-w-lg border shadow-lg">
+<div class="flex min-h-screen flex-col items-center justify-center bg-base-200 px-4 py-16">
+	<div class="d-card w-full max-w-lg border border-base-300 bg-base-100 shadow-lg">
 		<div class="d-card-body gap-6 text-center">
 			<div>
-				<p class="text-base-content/60 text-sm font-medium tracking-wide uppercase">Error</p>
-				<p class="text-primary text-5xl font-bold tabular-nums">{status}</p>
+				<p class="text-sm font-medium tracking-wide text-base-content/60 uppercase">Error</p>
+				<p class="text-5xl font-bold text-primary tabular-nums">{status}</p>
 				<h1 class="mt-2 text-xl font-semibold">{message}</h1>
 				{#if page.url?.pathname}
-					<p class="text-base-content/50 mt-2 break-all text-xs">{page.url.pathname}</p>
+					<p class="mt-2 text-xs break-all text-base-content/50">{page.url.pathname}</p>
 				{/if}
 			</div>
 
 			{#if status === 401}
-				<p class="text-base-content/70 text-sm">
+				<p class="text-sm text-base-content/70">
 					Your session may have expired. Sign in again to continue.
 				</p>
 			{:else if status === 503}
-				<p class="text-base-content/70 text-sm">
+				<p class="text-sm text-base-content/70">
 					The service or database is temporarily unavailable. Try again in a moment.
 				</p>
 			{/if}
