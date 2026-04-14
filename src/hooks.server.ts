@@ -1,10 +1,28 @@
 import { sequence } from '@sveltejs/kit/hooks';
-import { building } from '$app/environment';
+import { building, dev } from '$app/environment';
+import { env } from '$env/dynamic/private';
 import { auth } from '$lib/server/auth';
 import { isAuthPath } from 'better-auth/svelte-kit';
 import type { Handle, HandleServerError } from '@sveltejs/kit';
 import { getTextDirection } from '$lib/paraglide/runtime';
 import { paraglideMiddleware } from '$lib/paraglide/server';
+
+let warnedMissingOrigin = false;
+
+/** Logs once if ORIGIN is unset in production (breaks Better Auth baseURL + SvelteKit form POST CSRF checks). */
+const handleProductionConfig: Handle = ({ event, resolve }) => {
+	if (!building && !dev && !warnedMissingOrigin) {
+		const o = typeof env.ORIGIN === 'string' ? env.ORIGIN.trim() : '';
+		if (!o) {
+			warnedMissingOrigin = true;
+			console.error(
+				'[config] ORIGIN is empty. Set it to your public URL (e.g. fly secrets set ORIGIN=https://your-app.fly.dev). ' +
+					'Otherwise logins can fail with "Cross-site POST form submissions are forbidden".'
+			);
+		}
+	}
+	return resolve(event);
+};
 
 /** Browsers often request `/favicon.ico` even when HTML points at `/favicon.svg`. */
 const handleFavicon: Handle = ({ event, resolve }) => {
@@ -72,7 +90,12 @@ const handleBetterAuth: Handle = async ({ event, resolve }) => {
 	return resolve(event);
 };
 
-export const handle: Handle = sequence(handleFavicon, handleParaglide, handleBetterAuth);
+export const handle: Handle = sequence(
+	handleProductionConfig,
+	handleFavicon,
+	handleParaglide,
+	handleBetterAuth
+);
 
 export const handleError: HandleServerError = ({ error, event, status, message }) => {
 	const path = event.url.pathname;

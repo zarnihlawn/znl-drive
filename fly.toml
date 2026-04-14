@@ -16,6 +16,14 @@ primary_region = 'sin'
   min_machines_running = 0
   processes = ['app']
 
+# Fly’s edge sets X-Forwarded-Proto (https). The VM still sees HTTP internally, so without this
+# SvelteKit may think the site is http://… and reject POST forms with:
+#   "Cross-site POST form submissions are forbidden"
+# Also set ORIGIN to the same public URL (Better Auth baseURL), e.g.:
+#   fly secrets set ORIGIN=https://your-app.fly.dev
+[env]
+  PROTOCOL_HEADER = 'x-forwarded-proto'
+
 [[vm]]
   memory = '1gb'
   cpu_kind = 'shared'
