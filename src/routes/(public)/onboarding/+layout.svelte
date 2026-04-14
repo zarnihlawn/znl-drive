@@ -26,7 +26,6 @@
 					<li>
 						<a href={localizeHref('/onboarding/docs')} target="_blank" rel="noopener noreferrer">Docs</a>
 					</li>
-					<li><a href={resolve('/(public)/onboarding/blogs')}>Blogs</a></li>
 					<li><a href={resolve('/(public)/onboarding/pricing')}>Pricing</a></li>
 				</ul>
 			</div>
@@ -37,7 +36,6 @@
 				<li>
 					<a href={localizeHref('/onboarding/docs')} target="_blank" rel="noopener noreferrer">Docs</a>
 				</li>
-				<li><a href={resolve('/(public)/onboarding/blogs')}>Blogs</a></li>
 				<li><a href={resolve('/(public)/onboarding/pricing')}>Pricing</a></li>
 			</ul>
 		</div>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { browser } from '$app/environment';
 	import { invalidateAll } from '$app/navigation';
 	import SettingsSearchHighlight from '$lib/components/settings-search-highlight.svelte';
 	import { fetchWithSession } from '$lib/client/fetch-session';
@@ -73,6 +74,7 @@
 	}
 
 	$effect(() => {
+		if (!browser) return;
 		if (dialogIsOpen && visibleActiveSection === 'developer') {
 			void refreshDeveloperPanel();
 		}

@@ -1,57 +1,22 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import { resolveHref } from '$lib/url/resolve-href';
 	import { formatBytes } from '$lib/tool/format-bytes';
+	import type { PageData } from './$types';
 
-	type PublicItem = {
-		id: string;
-		ownerId: string;
-		itemType: string;
-		name: string;
-		mimeType: string;
-		sizeBytes: number;
-		updatedAt: string;
-		storageProvider: string;
-	};
+	let { data }: { data: PageData } = $props();
 
-	type Payload = { ok: true; token: string; item: PublicItem };
+	const share = $derived(data.sharePayload);
+	const loadError = $derived(data.shareError);
 
-	let loading = $state(true);
-	let loadError = $state<string | null>(null);
-	let data = $state<Payload | null>(null);
 	let fullPageUrl = $state('');
 	let directFileAbsolute = $state('');
 
-	$effect(() => {
-		const token = page.params.token;
-		if (!token) return;
-		let cancelled = false;
-		loading = true;
-		loadError = null;
-		data = null;
-
-		void (async () => {
-			try {
-				const r = await fetch(resolveHref(`/api/public/share/${token}`));
-				if (!r.ok) throw new Error((await r.text()) || r.statusText);
-				const payload = (await r.json()) as Payload;
-				if (!cancelled) data = payload;
-			} catch (e) {
-				if (!cancelled) loadError = e instanceof Error ? e.message : 'Not found';
-			} finally {
-				if (!cancelled) loading = false;
-			}
-		})();
-
-		return () => {
-			cancelled = true;
-		};
-	});
-
-	const isImage = $derived(Boolean(data?.item.itemType === 'file' && data?.item.mimeType?.startsWith('image/')));
-	const rawUrl = $derived(data ? resolveHref(`/api/public/files/${data.token}`) : '');
+	const isImage = $derived(
+		Boolean(share?.item.itemType === 'file' && share?.item.mimeType?.startsWith('image/'))
+	);
+	const rawUrl = $derived(share ? resolveHref(`/api/public/files/${share.token}`) : '');
 
 	$effect(() => {
 		if (!browser) {
@@ -59,7 +24,7 @@
 			directFileAbsolute = '';
 			return;
 		}
-		if (!data) {
+		if (!share) {
 			fullPageUrl = '';
 			directFileAbsolute = '';
 			return;
@@ -73,7 +38,7 @@
 	<div class="d-card border border-base-content/10 bg-base-100 shadow-sm">
 		<div class="d-card-body gap-5">
 			<div class="flex flex-col gap-1">
-				<h1 class="text-xl font-bold break-words">{data?.item.name ?? 'Shared item'}</h1>
+				<h1 class="text-xl font-bold break-words">{share?.item.name ?? 'Shared item'}</h1>
 				<p class="text-base-content/70 text-sm">Public link. Download is available below.</p>
 				{#if fullPageUrl}
 					<div class="space-y-1">
@@ -88,32 +53,30 @@
 				{/if}
 			</div>
 
-			{#if loading}
-				<div class="d-skeleton h-32 w-full"></div>
-			{:else if loadError}
+			{#if loadError}
 				<div class="d-alert d-alert-error">
 					<span>{loadError}</span>
 				</div>
-			{:else if data}
+			{:else if share}
 				<div class="grid gap-2 text-sm sm:grid-cols-2">
 					<div class="text-base-content/60">Type</div>
-					<div class="font-medium">{data.item.itemType}</div>
+					<div class="font-medium">{share.item.itemType}</div>
 
 					<div class="text-base-content/60">MIME</div>
-					<div class="font-medium break-words">{data.item.mimeType || 'unknown'}</div>
+					<div class="font-medium break-words">{share.item.mimeType || 'unknown'}</div>
 
 					<div class="text-base-content/60">Size</div>
-					<div class="font-medium">{formatBytes(data.item.sizeBytes)}</div>
+					<div class="font-medium">{formatBytes(share.item.sizeBytes)}</div>
 
 					<div class="text-base-content/60">Updated</div>
-					<div class="font-medium">{data.item.updatedAt.slice(0, 10)}</div>
+					<div class="font-medium">{share.item.updatedAt.slice(0, 10)}</div>
 				</div>
 
 				{#if isImage}
 					<div class="rounded-box border border-base-200 bg-base-200/30 p-3">
 						<img
 							src={rawUrl}
-							alt={data.item.name}
+							alt={share.item.name}
 							class="max-h-[70vh] w-full object-contain"
 							loading="lazy"
 						/>
