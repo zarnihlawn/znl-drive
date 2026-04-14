@@ -12,9 +12,43 @@ import {
 } from '$lib/server/db/schema/auth-schema/auth.schema';
 import { getFromAddress, getSmtpTransport } from '$lib/server/mailer';
 
+/**
+ * CI/Docker image builds (e.g. `flyctl deploy --remote-only`) run `pnpm run build` without Fly secrets.
+ * Better Auth throws if it falls back to its default secret/base URL. We provide safe placeholders
+ * during the build step so compilation succeeds, but we still fail fast at runtime in production.
+ */
+const isBuildStep = process.env.npm_lifecycle_event === 'build' || process.env.BUILDING === 'true';
+
+const baseURL =
+	(typeof env.ORIGIN === 'string' && env.ORIGIN.trim() ? env.ORIGIN.trim() : undefined) ??
+	(typeof process.env.ORIGIN === 'string' && process.env.ORIGIN.trim() ? process.env.ORIGIN.trim() : undefined) ??
+	(isBuildStep ? 'http://localhost:5173' : undefined);
+
+const secret =
+	(typeof env.BETTER_AUTH_SECRET === 'string' && env.BETTER_AUTH_SECRET.trim()
+		? env.BETTER_AUTH_SECRET.trim()
+		: undefined) ??
+	(typeof process.env.BETTER_AUTH_SECRET === 'string' && process.env.BETTER_AUTH_SECRET.trim()
+		? process.env.BETTER_AUTH_SECRET.trim()
+		: undefined) ??
+	(isBuildStep ? 'build-only-secret-change-me' : undefined);
+
+if (!isBuildStep && process.env.NODE_ENV === 'production') {
+	if (!baseURL) {
+		throw new Error(
+			'[config] ORIGIN is not set. Set it to your public URL (e.g. fly secrets set ORIGIN=https://your-app.fly.dev).'
+		);
+	}
+	if (!secret) {
+		throw new Error(
+			'[config] BETTER_AUTH_SECRET is not set. Set it in production (e.g. fly secrets set BETTER_AUTH_SECRET=...).'
+		);
+	}
+}
+
 export const auth = betterAuth({
-	baseURL: env.ORIGIN,
-	secret: env.BETTER_AUTH_SECRET,
+	baseURL: baseURL!,
+	secret: secret!,
 	user: {
 		additionalFields: {
 			developerModeEnabled: {
