@@ -34,6 +34,7 @@ export const GET: RequestHandler = async ({ request, url }) => {
 			COUNT(*) FILTER (WHERE item_type = 'file' AND is_starred = true AND trashed_at IS NULL)::int AS starred_files
 		FROM main_file
 		WHERE owner_id = ${userId}
+			AND team_id IS NULL
 			AND storage_provider = ${storageProvider}
 	`)) as unknown as {
 		rows: Array<{
@@ -57,6 +58,7 @@ export const GET: RequestHandler = async ({ request, url }) => {
 		FROM main_file_share s
 		INNER JOIN main_file f ON f.id = s.file_id
 		WHERE s.owner_id = ${userId}
+			AND f.team_id IS NULL
 			AND f.storage_provider = ${storageProvider}
 			AND f.trashed_at IS NULL
 	`)) as unknown as { rows: Array<{ n: number }> };
@@ -77,6 +79,7 @@ export const GET: RequestHandler = async ({ request, url }) => {
 			COALESCE(SUM(size_bytes), 0)::bigint AS bytes
 		FROM main_file
 		WHERE owner_id = ${userId}
+			AND team_id IS NULL
 			AND storage_provider = ${storageProvider}
 			AND item_type = 'file'
 			AND trashed_at IS NULL
@@ -98,6 +101,7 @@ export const GET: RequestHandler = async ({ request, url }) => {
 			SELECT date_trunc('week', updated_at AT TIME ZONE 'UTC')::date AS week_start, COUNT(*)::int AS n
 			FROM main_file
 			WHERE owner_id = ${userId}
+				AND team_id IS NULL
 				AND storage_provider = ${storageProvider}
 				AND item_type = 'file'
 				AND trashed_at IS NULL

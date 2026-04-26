@@ -1,4 +1,5 @@
 import { buildFolderZipBuffer } from '$lib/server/drive-folder-zip';
+import { userCanAccessFile } from '$lib/server/team-access';
 import { openFileBuffer } from '$lib/server/drive-seal';
 import { requireApiSession } from '$lib/server/require-api-session';
 import { readStoredBlob } from '$lib/server/drive-load';
@@ -34,7 +35,10 @@ export const GET: RequestHandler = async ({ request, params }) => {
 
 	if (!row) throw error(404, 'Not found');
 
-	let allowed = row.ownerId === session.user.id;
+	let allowed = await userCanAccessFile(session.user.id, {
+		ownerId: row.ownerId,
+		teamId: row.teamId
+	});
 
 	if (!allowed && session.user.email) {
 		const email = session.user.email.toLowerCase();

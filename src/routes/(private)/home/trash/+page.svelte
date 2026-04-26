@@ -1,9 +1,7 @@
 <script lang="ts">
-	import { browser } from '$app/environment';
 	import { resolve } from '$app/paths';
 	import { fetchWithSession } from '$lib/client/fetch-session';
 	import { resolveHref } from '$lib/url/resolve-href';
-	import { page } from '$app/state';
 	import { patchDriveFile, permanentDeleteDriveFile } from '$lib/client/drive-file';
 	import {
 		fileLabelBorderClass,
@@ -13,7 +11,7 @@
 	import type { StorageProviderId } from '$lib/model/storage-provider';
 	import { storageProviderLabel } from '$lib/model/storage-provider';
 	import { StatusColorEnum } from '$lib/model/enum/color.enum';
-	import { bumpDriveListRefresh, driveListRefresh } from '$lib/state/drive-refresh.svelte';
+	import { bumpDriveListRefresh, registerDriveListReload } from '$lib/state/drive-refresh.svelte';
 	import { driveStorage } from '$lib/state/storage-provider.svelte';
 	import { toastService } from '$lib/service/toast.service.svelte';
 	import { formatBytes } from '$lib/tool/format-bytes';
@@ -24,6 +22,7 @@
 		LucideRotateCcw,
 		LucideTrash2
 	} from '@lucide/svelte';
+	import { onMount } from 'svelte';
 
 	type ApiRow = {
 		id: string;
@@ -113,12 +112,9 @@
 		}
 	}
 
-	$effect(() => {
-		if (!browser) return;
-		void driveListRefresh.tick;
-		void driveStorage.current;
-		void page.url.pathname;
+	onMount(() => {
 		void loadTrash();
+		return registerDriveListReload(() => void loadTrash());
 	});
 
 	async function onRestore(item: TrashItem) {

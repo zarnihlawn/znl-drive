@@ -30,8 +30,7 @@ async function collectSubtreeRows(rootFolderId: string): Promise<SubtreeRow[]> {
 				name,
 				item_type::text AS item_type,
 				path,
-				storage_provider,
-				owner_id
+				storage_provider
 			FROM main_file
 			WHERE id = ${rootFolderId}::uuid
 				AND trashed_at IS NULL
@@ -42,12 +41,9 @@ async function collectSubtreeRows(rootFolderId: string): Promise<SubtreeRow[]> {
 				m.name,
 				m.item_type::text,
 				m.path,
-				m.storage_provider,
-				m.owner_id
+				m.storage_provider
 			FROM main_file m
 			INNER JOIN sub s ON m.parent_id = s.id
-				AND m.owner_id = s.owner_id
-				AND m.storage_provider = s.storage_provider
 			WHERE m.trashed_at IS NULL
 		)
 		SELECT id, parent_id, name, item_type, path, storage_provider FROM sub

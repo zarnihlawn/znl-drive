@@ -1,14 +1,18 @@
+import { resolveParentFolderForTeam } from '$lib/server/drive-parent-team';
 import { resolveParentFolderForUser } from '$lib/server/drive-parent';
 import { requireApiSession } from '$lib/server/require-api-session';
+import { isTeamMember } from '$lib/server/team-access';
 import {
 	localPathNewFolderAtRoot,
 	localPathNewSubfolder,
 	tigrisKeyNewFolderAtRoot,
-	tigrisKeyNewSubfolder
+	tigrisKeyNewFolderAtRootTeam,
+	tigrisKeyNewSubfolder,
+	tigrisKeyNewSubfolderTeam
 } from '$lib/server/drive-storage-layout';
 import { db } from '$lib/server/db';
 import { MainFileSchema } from '$lib/server/db/schema/main-schema/main.schema';
-import { localUserUploadDir } from '$lib/server/local-drive-path';
+import { localTeamUploadDir, localUserUploadDir } from '$lib/server/local-drive-path';
 import { TigrisUtil } from '$lib/service/tigris.service.svelte';
 import type { StorageProviderId } from '$lib/model/storage-provider';
 import { error, json } from '@sveltejs/kit';
@@ -21,7 +25,8 @@ const bodySchema = z
 	.object({
 		name: z.string().min(1).max(500),
 		storageProvider: z.enum(['local', 'tigris']),
-		parentId: z.string().uuid().optional()
+		parentId: z.string().uuid().optional(),
+		teamId: z.string().uuid().optional()
 	})
 	.strict();
 
@@ -46,11 +51,20 @@ export const POST: RequestHandler = async ({ request }) => {
 	const name = safeFolderName(parsed.data.name);
 
 	const userId = session.user.id;
-	const parentFolder = await resolveParentFolderForUser(userId, provider, parsed.data.parentId);
+	const teamId = parsed.data.teamId;
+	if (teamId) {
+		if (!(await isTeamMember(userId, teamId))) {
+			throw error(403, 'Forbidden');
+		}
+	}
+	const parentFolder = teamId
+		? await resolveParentFolderForTeam(userId, teamId, provider, parsed.data.parentId)
+		: await resolveParentFolderForUser(userId, provider, parsed.data.parentId);
 	const id = randomUUID();
+	const teamIdVal = teamId ?? null;
 
 	if (provider === 'local') {
-		const userDir = localUserUploadDir(userId);
+		const userDir = teamId ? localTeamUploadDir(teamId) : localUserUploadDir(userId);
 		const diskPath = parentFolder
 			? localPathNewSubfolder(parentFolder.path, id)
 			: localPathNewFolderAtRoot(userDir, id);
@@ -59,6 +73,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		await db.insert(MainFileSchema).values({
 			id,
 			ownerId: userId,
+			teamId: teamIdVal,
 			parentId: parentFolder?.id ?? null,
 			itemType: 'folder',
 			path: diskPath,
@@ -75,8 +90,12 @@ export const POST: RequestHandler = async ({ request }) => {
 		});
 	} else {
 		const objectKey = parentFolder
-			? tigrisKeyNewSubfolder(parentFolder.path, id)
-			: tigrisKeyNewFolderAtRoot(userId, id);
+			? teamId
+				? tigrisKeyNewSubfolderTeam(parentFolder.path, id)
+				: tigrisKeyNewSubfolder(parentFolder.path, id)
+			: teamId
+				? tigrisKeyNewFolderAtRootTeam(teamId, id)
+				: tigrisKeyNewFolderAtRoot(userId, id);
 		try {
 			await TigrisUtil.upload(objectKey, Buffer.alloc(0), {
 				contentType: 'application/octet-stream'
@@ -89,6 +108,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		await db.insert(MainFileSchema).values({
 			id,
 			ownerId: userId,
+			teamId: teamIdVal,
 			parentId: parentFolder?.id ?? null,
 			itemType: 'folder',
 			path: objectKey,

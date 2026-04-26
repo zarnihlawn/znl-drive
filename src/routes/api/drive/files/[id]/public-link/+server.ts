@@ -1,3 +1,4 @@
+import { getMainFileIfAccessible, requireMainFileForMutation } from '$lib/server/drive-file-access';
 import { requireApiSession } from '$lib/server/require-api-session';
 import { appAbsoluteUrlFromRequest } from '$lib/server/app-absolute-url';
 import { db } from '$lib/server/db';
@@ -20,6 +21,10 @@ export const GET: RequestHandler = async ({ request, params }) => {
 	const id = params.id;
 	if (!id) throw error(400, 'Missing id');
 
+	if (!(await getMainFileIfAccessible(session.user.id, id))) {
+		throw error(404, 'Not found');
+	}
+
 	const [row] = await db
 		.select({
 			token: MainFilePublicLinkSchema.token,
@@ -31,7 +36,6 @@ export const GET: RequestHandler = async ({ request, params }) => {
 		.where(
 			and(
 				eq(MainFilePublicLinkSchema.fileId, id),
-				eq(MainFilePublicLinkSchema.ownerId, session.user.id),
 				isNull(MainFilePublicLinkSchema.revokedAt),
 				isNull(MainFileSchema.trashedAt)
 			)
@@ -63,17 +67,7 @@ export const POST: RequestHandler = async ({ request, params }) => {
 	const id = params.id;
 	if (!id) throw error(400, 'Missing id');
 
-	const [item] = await db
-		.select({
-			id: MainFileSchema.id,
-			itemType: MainFileSchema.itemType,
-			mimeType: MainFileSchema.mimeType
-		})
-		.from(MainFileSchema)
-		.where(and(eq(MainFileSchema.id, id), eq(MainFileSchema.ownerId, session.user.id)))
-		.limit(1);
-
-	if (!item) throw error(404, 'Not found');
+	const item = await requireMainFileForMutation(session.user.id, id);
 
 	const [existing] = await db
 		.select({
@@ -119,12 +113,7 @@ export const DELETE: RequestHandler = async ({ request, params }) => {
 	const id = params.id;
 	if (!id) throw error(400, 'Missing id');
 
-	const [row] = await db
-		.select({ id: MainFileSchema.id })
-		.from(MainFileSchema)
-		.where(and(eq(MainFileSchema.id, id), eq(MainFileSchema.ownerId, session.user.id)))
-		.limit(1);
-	if (!row) throw error(404, 'Not found');
+	await requireMainFileForMutation(session.user.id, id);
 
 	await db
 		.update(MainFilePublicLinkSchema)

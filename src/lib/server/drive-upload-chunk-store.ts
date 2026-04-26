@@ -9,6 +9,7 @@ export type ChunkUploadMeta = {
 	mimeType: string;
 	storageProvider: StorageProviderId;
 	parentId: string | null;
+	teamId: string | null;
 	chunkCount: number;
 	nextChunkIndex: number;
 };
@@ -28,7 +29,11 @@ export function metaPath(userId: string, uploadId: string) {
 export async function readMeta(userId: string, uploadId: string): Promise<ChunkUploadMeta | null> {
 	try {
 		const raw = await readFile(metaPath(userId, uploadId), 'utf8');
-		return JSON.parse(raw) as ChunkUploadMeta;
+		const j = JSON.parse(raw) as Partial<ChunkUploadMeta>;
+		return {
+			...j,
+			teamId: j.teamId ?? null
+		} as ChunkUploadMeta;
 	} catch {
 		return null;
 	}
@@ -49,6 +54,7 @@ export async function appendChunk(
 		mimeType: string;
 		storageProvider: StorageProviderId;
 		parentId: string | null;
+		teamId: string | null;
 	}
 ): Promise<{ uploadId: string; meta: ChunkUploadMeta }> {
 	if (chunkIndex < 0 || chunkIndex >= chunkCount) {

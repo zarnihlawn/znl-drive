@@ -3,6 +3,8 @@ import { canAccessSharedItem, sharedRootIdsForRecipient } from '$lib/server/driv
 import { db } from '$lib/server/db';
 import { AuthUserSchema } from '$lib/server/db/schema/auth-schema/auth.schema';
 import { MainFileSchema } from '$lib/server/db/schema/main-schema/main.schema';
+import { TeamSchema } from '$lib/server/db/schema/main-schema/team.schema';
+import { isTeamMember, listTeamsForUser } from '$lib/server/team-access';
 import { pathWithoutBase } from '$lib/url/path-without-base';
 import type { LayoutServerLoad } from './$types';
 import { redirect } from '@sveltejs/kit';
@@ -10,6 +12,16 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { and, eq, isNull } from 'drizzle-orm';
 import { z } from 'zod';
+
+/** Migration `0003_team_drive` not applied — team / team_member tables are missing. */
+function isMissingRelationError(e: unknown): boolean {
+	const code = (e as { cause?: { code?: string } })?.cause?.code;
+	if (code === '42P01') return true;
+	const msg = e instanceof Error ? e.message : String(e);
+	if (/relation "team"/i.test(msg) && /does not exist/i.test(msg)) return true;
+	if (/42P01/i.test(msg)) return true;
+	return false;
+}
 
 function readAppVersion(): string {
 	try {
@@ -27,9 +39,45 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 	}
 
 	const rel = pathWithoutBase(url.pathname);
+	const teamPathMatch = rel.match(/^\/home\/team\/([0-9a-f-]{36})$/i);
+	const teamRouteId = teamPathMatch?.[1] ?? null;
 	const isHomeFilesPage = rel === '/home';
 	const isSharedPage = rel === '/home/shared';
 	const isTrashPage = rel === '/home/trash';
+
+	const teams = await listTeamsForUser(locals.user.id);
+
+	let teamView: {
+		id: string;
+		name: string;
+		rootFolderId: string;
+		storageProvider: 'local' | 'tigris';
+	} | null = null;
+
+	if (teamRouteId) {
+		if (!(await isTeamMember(locals.user.id, teamRouteId))) {
+			throw redirect(303, '/home');
+		}
+		const [t] = await db
+			.select({
+				id: TeamSchema.id,
+				name: TeamSchema.name,
+				rootFolderId: TeamSchema.rootFolderId,
+				storageProvider: TeamSchema.storageProvider
+			})
+			.from(TeamSchema)
+			.where(eq(TeamSchema.id, teamRouteId))
+			.limit(1);
+		if (!t?.rootFolderId) {
+			throw redirect(303, '/home');
+		}
+		teamView = {
+			id: t.id,
+			name: t.name,
+			rootFolderId: t.rootFolderId,
+			storageProvider: t.storageProvider as 'local' | 'tigris'
+		};
+	}
 
 	const folderParam = url.searchParams.get('folder');
 	let currentFolder: {
@@ -44,7 +92,10 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 	if (folderParam && folderParam.trim() !== '') {
 		const parsed = z.string().uuid().safeParse(folderParam.trim());
 		if (!parsed.success) {
-			throw redirect(303, isSharedPage ? resolve('/home/shared') : resolve('/home'));
+			throw redirect(
+				303,
+				isSharedPage ? resolve('/home/shared') : teamRouteId ? resolve(`/home/team/${teamRouteId}`) : resolve('/home')
+			);
 		}
 
 		if (isSharedPage) {
@@ -98,6 +149,7 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 					and(
 						eq(MainFileSchema.id, parsed.data),
 						eq(MainFileSchema.ownerId, locals.user.id),
+						isNull(MainFileSchema.teamId),
 						isNull(MainFileSchema.trashedAt)
 					)
 				)
@@ -110,6 +162,41 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 			const upHref: string = row.parentId
 				? `${resolve('/home')}?folder=${encodeURIComponent(row.parentId)}`
 				: resolve('/home');
+
+			currentFolder = {
+				id: row.id,
+				name: row.name,
+				parentId: row.parentId ?? null,
+				upHref
+			};
+		} else if (teamRouteId && teamView) {
+			const [row] = await db
+				.select({
+					id: MainFileSchema.id,
+					name: MainFileSchema.name,
+					parentId: MainFileSchema.parentId,
+					itemType: MainFileSchema.itemType,
+					teamId: MainFileSchema.teamId
+				})
+				.from(MainFileSchema)
+				.where(
+					and(
+						eq(MainFileSchema.id, parsed.data),
+						eq(MainFileSchema.teamId, teamRouteId),
+						isNull(MainFileSchema.trashedAt)
+					)
+				)
+				.limit(1);
+
+			if (!row || row.itemType !== 'folder') {
+				throw redirect(303, resolve(`/home/team/${teamRouteId}`));
+			}
+
+			const base = resolve(`/home/team/${teamRouteId}`);
+			const upHref: string =
+				!row.parentId || row.parentId === teamView.rootFolderId
+					? base
+					: `${base}?folder=${encodeURIComponent(row.parentId)}`;
 
 			currentFolder = {
 				id: row.id,
@@ -136,6 +223,8 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 		developerModeEnabled,
 		currentFolder,
 		sharedView: isSharedPage,
-		trashView: isTrashPage
+		trashView: isTrashPage,
+		teams,
+		teamView
 	};
 };

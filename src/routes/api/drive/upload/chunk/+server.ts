@@ -1,5 +1,6 @@
 import { appendChunk, readAssembled, removeSession } from '$lib/server/drive-upload-chunk-store';
 import { requireApiSession } from '$lib/server/require-api-session';
+import { isTeamMember } from '$lib/server/team-access';
 import { persistSealedUpload } from '$lib/server/drive-upload-persist';
 import { STORAGE_PROVIDERS, type StorageProviderId } from '$lib/model/storage-provider';
 import { error, json } from '@sveltejs/kit';
@@ -34,6 +35,7 @@ export const POST: RequestHandler = async ({ request }) => {
 				mimeType: string;
 				storageProvider: StorageProviderId;
 				parentId: string | null;
+				teamId: string | null;
 		  }
 		| undefined;
 
@@ -49,11 +51,22 @@ export const POST: RequestHandler = async ({ request }) => {
 			if (!p.success) throw error(400, 'Invalid parent folder');
 			parentId = p.data;
 		}
+		let teamId: string | null = null;
+		const teamRaw = formData.get('teamId');
+		if (typeof teamRaw === 'string' && teamRaw.trim() !== '') {
+			const t = z.string().uuid().safeParse(teamRaw.trim());
+			if (!t.success) throw error(400, 'Invalid team id');
+			if (!(await isTeamMember(userId, t.data))) {
+				throw error(403, 'Forbidden');
+			}
+			teamId = t.data;
+		}
 		init = {
 			fileName: String(formData.get('fileName') ?? 'unnamed'),
 			mimeType: String(formData.get('mimeType') ?? 'application/octet-stream'),
 			storageProvider: sp as StorageProviderId,
-			parentId
+			parentId,
+			teamId
 		};
 	}
 
@@ -78,13 +91,15 @@ export const POST: RequestHandler = async ({ request }) => {
 			throw error(413, 'File too large');
 		}
 
+		const teamId = 'teamId' in meta && meta.teamId != null ? meta.teamId : null;
 		const created = await persistSealedUpload(
 			userId,
 			meta.storageProvider,
 			meta.parentId,
 			plain,
 			meta.fileName,
-			meta.mimeType
+			meta.mimeType,
+			teamId ? { teamId } : undefined
 		);
 
 		return json({ ok: true, done: true, uploadId: sid, created: [created] });

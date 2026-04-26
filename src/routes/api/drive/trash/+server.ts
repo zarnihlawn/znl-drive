@@ -6,7 +6,7 @@ import { AuthUserSchema } from '$lib/server/db/schema/auth-schema/auth.schema';
 import { MainFileSchema } from '$lib/server/db/schema/main-schema/main.schema';
 import { STORAGE_PROVIDERS, type StorageProviderId } from '$lib/model/storage-provider';
 import { error, json } from '@sveltejs/kit';
-import { and, desc, eq, isNotNull } from 'drizzle-orm';
+import { and, desc, eq, isNotNull, isNull } from 'drizzle-orm';
 import type { RequestHandler } from './$types';
 
 function ownerDisplayName(name: string | null | undefined, email: string): string {
@@ -45,6 +45,7 @@ export const GET: RequestHandler = async ({ request, url }) => {
 		.where(
 			and(
 				eq(MainFileSchema.ownerId, session.user.id),
+				isNull(MainFileSchema.teamId),
 				eq(MainFileSchema.storageProvider, storageProvider),
 				isNotNull(MainFileSchema.trashedAt)
 			)

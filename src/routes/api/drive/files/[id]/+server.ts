@@ -1,3 +1,4 @@
+import { getMainFileIfAccessible, requireMainFileForMutation } from '$lib/server/drive-file-access';
 import { permanentDeleteTrashedItem } from '$lib/server/drive-permanent-delete';
 import { requireApiSession } from '$lib/server/require-api-session';
 import { db } from '$lib/server/db';
@@ -6,7 +7,7 @@ import { FILE_LABEL_COLORS, type FileLabelColorId } from '$lib/model/file-label-
 
 const colorEnum = z.enum(FILE_LABEL_COLORS as unknown as [FileLabelColorId, ...FileLabelColorId[]]);
 import { error, json } from '@sveltejs/kit';
-import { and, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import type { RequestHandler } from './$types';
 
@@ -47,12 +48,7 @@ export const PATCH: RequestHandler = async ({ request, params }) => {
 		throw error(400, 'No fields to update');
 	}
 
-	const [row] = await db
-		.select({ id: MainFileSchema.id })
-		.from(MainFileSchema)
-		.where(and(eq(MainFileSchema.id, id), eq(MainFileSchema.ownerId, session.user.id)))
-		.limit(1);
-
+	const row = await getMainFileIfAccessible(session.user.id, id);
 	if (!row) throw error(404, 'File not found');
 
 	const updates: Partial<typeof MainFileSchema.$inferInsert> = {};
@@ -76,16 +72,7 @@ export const DELETE: RequestHandler = async ({ request, params }) => {
 	const id = params.id;
 	if (!id) throw error(400, 'Missing id');
 
-	const [row] = await db
-		.select({
-			id: MainFileSchema.id,
-			trashedAt: MainFileSchema.trashedAt
-		})
-		.from(MainFileSchema)
-		.where(and(eq(MainFileSchema.id, id), eq(MainFileSchema.ownerId, session.user.id)))
-		.limit(1);
-
-	if (!row) throw error(404, 'Not found');
+	const row = await requireMainFileForMutation(session.user.id, id);
 	if (!row.trashedAt) throw error(400, 'Only items in trash can be permanently deleted');
 
 	try {

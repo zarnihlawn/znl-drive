@@ -5,8 +5,10 @@
 	import { formatBytes } from '$lib/tool/format-bytes';
 	import type { StorageProviderId } from '$lib/model/storage-provider';
 	import { storageProviderLabel } from '$lib/model/storage-provider';
+	import { registerDriveListReload } from '$lib/state/drive-refresh.svelte';
 	import { driveStorage } from '$lib/state/storage-provider.svelte';
 	import * as d3 from 'd3';
+	import { onMount } from 'svelte';
 
 	type StatsPayload = {
 		storageProvider: StorageProviderId;
@@ -258,32 +260,38 @@
 		if (lineEl) drawActivityLine(lineEl, s.activityByWeek);
 	}
 
-	$effect(() => {
+	let statsLoadSeq = 0;
+
+	async function loadStats() {
 		if (!browser) return;
+		const seq = ++statsLoadSeq;
 		const sp = driveStorage.current;
-		let cancelled = false;
 		loading = true;
 		loadError = null;
-		void (async () => {
-			try {
-				const r = await fetchWithSession(
-					`${resolveHref('/api/drive/stats')}?storageProvider=${encodeURIComponent(sp)}`
-				);
-				if (!r.ok) throw new Error((await r.text()) || r.statusText);
-				const payload = (await r.json()) as StatsPayload;
-				if (!cancelled) stats = payload;
-			} catch (e) {
-				if (!cancelled) {
-					loadError = e instanceof Error ? e.message : 'Failed to load dashboard';
-					stats = null;
-				}
-			} finally {
-				if (!cancelled) loading = false;
+		try {
+			const r = await fetchWithSession(
+				`${resolveHref('/api/drive/stats')}?storageProvider=${encodeURIComponent(sp)}`
+			);
+			if (!r.ok) throw new Error((await r.text()) || r.statusText);
+			const payload = (await r.json()) as StatsPayload;
+			if (seq === statsLoadSeq) {
+				stats = payload;
 			}
-		})();
-		return () => {
-			cancelled = true;
-		};
+		} catch (e) {
+			if (seq === statsLoadSeq) {
+				loadError = e instanceof Error ? e.message : 'Failed to load dashboard';
+				stats = null;
+			}
+		} finally {
+			if (seq === statsLoadSeq) {
+				loading = false;
+			}
+		}
+	}
+
+	onMount(() => {
+		void loadStats();
+		return registerDriveListReload(() => void loadStats());
 	});
 
 	$effect(() => {
