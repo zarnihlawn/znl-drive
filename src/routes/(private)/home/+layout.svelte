@@ -247,6 +247,12 @@
 				{ href: null, label: 'Trash', isLast: true }
 			];
 		}
+		if (data.recentView) {
+			return [
+				{ href: resolve('/home'), label: 'Home', isLast: false },
+				{ href: null, label: 'Recent', isLast: true }
+			];
+		}
 		if (data.sharedView) {
 			if (data.currentFolder) {
 				return [
@@ -310,6 +316,7 @@
 	const upFolderHref = $derived.by(() => {
 		if (!data.currentFolder) {
 			if (data.trashView) return resolve('/home/trash');
+			if (data.recentView) return resolve('/home');
 			if (data.sharedView) return resolve('/home/shared');
 			if (data.teamView) return resolve(`/home/team/${data.teamView.id}`);
 			return resolve('/home');
@@ -320,6 +327,7 @@
 	/** Heading: current folder name or last URL segment. */
 	const pageTitle = $derived.by(() => {
 		if (data.trashView) return 'Trash';
+		if (data.recentView) return 'Recent';
 		if (data.sharedView) return data.currentFolder?.name ?? 'Shared';
 		if (data.teamView) return data.currentFolder?.name ?? data.teamView.name;
 		if (data.currentFolder) return data.currentFolder.name;
@@ -329,13 +337,17 @@
 		return formatBreadcrumbLabel(last);
 	});
 
-	const newActionsDisabled = $derived(Boolean(data.sharedView || data.trashView));
+	const newActionsDisabled = $derived(
+		Boolean(data.sharedView || data.trashView || data.recentView)
+	);
 	const newActionsTooltip = $derived(
 		data.trashView
 			? 'New folders and uploads are only available in Home, not in Trash.'
 			: data.sharedView
 				? 'New folders and uploads are only available in Home, not in Shared.'
-				: ''
+				: data.recentView
+					? 'New folders and uploads are only available in Home, not on Recent.'
+					: ''
 	);
 </script>
 

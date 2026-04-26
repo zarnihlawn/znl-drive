@@ -44,6 +44,12 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 	const isHomeFilesPage = rel === '/home';
 	const isSharedPage = rel === '/home/shared';
 	const isTrashPage = rel === '/home/trash';
+	const isRecentPage = rel === '/home/recent';
+
+	const folderParamEarly = url.searchParams.get('folder');
+	if (isRecentPage && folderParamEarly && folderParamEarly.trim() !== '') {
+		throw redirect(303, resolve('/home/recent'));
+	}
 
 	const teams = await listTeamsForUser(locals.user.id);
 
@@ -223,6 +229,7 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 		developerModeEnabled,
 		currentFolder,
 		sharedView: isSharedPage,
+		recentView: isRecentPage,
 		trashView: isTrashPage,
 		teams,
 		teamView
