@@ -50,13 +50,13 @@
 		{
 			href: '/onboarding/docs/user/storage-providers',
 			title: 'Storage providers',
-			desc: 'Local vs cloud storage targets in the navbar.',
+			desc: 'Local vs cloud in the top bar, including team drive behavior.',
 			Icon: LucideHardDrive
 		},
 		{
 			href: '/onboarding/docs/user/settings',
 			title: 'Settings',
-			desc: 'Theme, font, text size, language, and search.',
+			desc: 'Theme, font, text size, language, and filtering the settings list.',
 			Icon: LucideSettings
 		}
 	] as const;
@@ -66,7 +66,7 @@
 	<title>User manual · Documentation · ZNL-DRIVE</title>
 	<meta
 		name="description"
-		content="How to use ZNL-DRIVE: files, sharing, trash, public links, and settings."
+		content="How to use ZNL-DRIVE: home, teams, files, sharing, trash, public links, and settings."
 	/>
 </svelte:head>
 

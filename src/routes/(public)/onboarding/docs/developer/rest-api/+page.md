@@ -11,7 +11,9 @@ This table reflects handlers under `src/routes/api` as of the current codebase. 
 | `POST`   | `/api/auth/signup/verify-otp`       | Varies                 | Verify OTP.                                                         |
 | `POST`   | `/api/auth/social`                  | Varies                 | Social auth start/callback helper.                                  |
 | `GET`    | `/api/auth/social`                  | Varies                 | Social auth redirect handling.                                      |
-| `GET`    | `/api/drive/files`                  | Cookie or API key      | List files/folders; query `storageProvider`, `parentId` / `folder`. |
+| `GET`    | `/api/teams`                        | Cookie or API key      | List teams the current user belongs to.                            |
+| `POST`   | `/api/teams`                        | Cookie or API key      | Create a team (name, optional `storageProvider`, `inviteEmails`).  |
+| `GET`    | `/api/drive/files`                  | Cookie or API key      | List files/folders; query `storageProvider`, `parentId` / `folder`, `teamId`. |
 | `POST`   | `/api/drive/folders`                | Cookie or API key      | Create folder (JSON body).                                          |
 | `PATCH`  | `/api/drive/files/[id]`             | Cookie or API key      | Update pin, star, name, color, trash flag.                          |
 | `DELETE` | `/api/drive/files/[id]`             | Cookie or API key      | Permanently delete an item that is **already in trash**.            |

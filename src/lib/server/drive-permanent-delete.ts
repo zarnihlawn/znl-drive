@@ -11,7 +11,24 @@ type SubtreeRow = {
 	storageProvider: string;
 };
 
-/** All rows in the subtree rooted at `rootId` (same owner), for storage cleanup before DB cascade delete. */
+/** All rows in the subtree rooted at `rootId` (by `parent_id` links). Caller must authorize `rootId` first. */
+export async function collectSubtreeRowsByRootId(rootId: string): Promise<SubtreeRow[]> {
+	const result = (await db.execute(sql`
+		WITH RECURSIVE sub AS (
+			SELECT id, path, item_type::text AS item_type, storage_provider::text AS storage_provider
+			FROM main_file
+			WHERE id = ${rootId}::uuid
+			UNION ALL
+			SELECT m.id, m.path, m.item_type::text, m.storage_provider::text
+			FROM main_file m
+			INNER JOIN sub s ON m.parent_id = s.id
+		)
+		SELECT id, path, item_type, storage_provider FROM sub
+	`)) as unknown as { rows?: SubtreeRow[] };
+	return result.rows ?? [];
+}
+
+/** @deprecated Prefer `collectSubtreeRowsByRootId` after access check; kept for queries that scope by owner only. */
 export async function collectSubtreeRows(ownerId: string, rootId: string): Promise<SubtreeRow[]> {
 	const result = (await db.execute(sql`
 		WITH RECURSIVE sub AS (
@@ -34,7 +51,7 @@ export async function collectSubtreeRows(ownerId: string, rootId: string): Promi
  * Caller must ensure the row is trashed and owned by `ownerId`.
  */
 export async function permanentDeleteTrashedItem(ownerId: string, rootId: string): Promise<void> {
-	const rows = await collectSubtreeRows(ownerId, rootId);
+	const rows = await collectSubtreeRowsByRootId(rootId);
 	const root = rows.find((r) => r.id === rootId);
 	if (!root) throw new Error('Subtree not found');
 

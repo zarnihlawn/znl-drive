@@ -19,4 +19,4 @@ Exact sort behavior follows the Home implementation; both flags are persisted wi
 
 ## Folders
 
-Create folders from the **NEW** menu when you are in **Home** (not in Shared or Trash). Name validation strips risky characters and length limits apply on the server.
+Create folders from the **NEW** menu when you are in **Home** or in a **team drive** (not in Shared or Trash). You can also create a new **team** from the same **NEW** menu. Name validation strips risky characters and length limits apply on the server.

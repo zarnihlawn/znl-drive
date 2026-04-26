@@ -1,3 +1,4 @@
+import { getMainFileIfAccessible } from '$lib/server/drive-file-access';
 import { db } from '$lib/server/db';
 import { requireApiSession } from '$lib/server/require-api-session';
 import { MainFileSchema, MainFileShareSchema } from '$lib/server/db/schema/main-schema/main.schema';
@@ -32,14 +33,8 @@ export const POST: RequestHandler = async ({ request, params }) => {
 	const { targetEmail, permission, canReshare } = parsed.data;
 	const emailNorm = targetEmail.trim().toLowerCase();
 
-	const [row] = await db
-		.select()
-		.from(MainFileSchema)
-		.where(and(eq(MainFileSchema.id, id), isNull(MainFileSchema.trashedAt)))
-		.limit(1);
-
-	if (!row) throw error(404, 'Not found');
-	if (row.ownerId !== session.user.id) throw error(403, 'Forbidden');
+	const row = await getMainFileIfAccessible(session.user.id, id);
+	if (!row || row.trashedAt) throw error(404, 'Not found');
 	if (row.itemType !== 'file' && row.itemType !== 'folder') {
 		throw error(400, 'Only files and folders can be shared');
 	}

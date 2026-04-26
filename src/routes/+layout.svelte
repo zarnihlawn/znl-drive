@@ -14,7 +14,7 @@
 </svelte:head>
 {@render children()}
 
-<div style="display:none">
+<div style="display:none" class="bg-base-100">
 	{#each locales as locale}
 		<a href={localizeHref(page.url.pathname, { locale })}>{locale}</a>
 	{/each}

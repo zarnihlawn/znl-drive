@@ -1,7 +1,9 @@
 import { persistSealedUpload, safeUploadFileName } from '$lib/server/drive-upload-persist';
 import { requireApiSession } from '$lib/server/require-api-session';
+import { isTeamMember } from '$lib/server/team-access';
 import { STORAGE_PROVIDERS, type StorageProviderId } from '$lib/model/storage-provider';
 import { error, json } from '@sveltejs/kit';
+import { z } from 'zod';
 import type { RequestHandler } from './$types';
 
 const MAX_BYTES = 100 * 1024 * 1024;
@@ -24,6 +26,16 @@ export const POST: RequestHandler = async ({ request }) => {
 
 	const userId = session.user.id;
 	const parentIdRaw = formData.get('parentId');
+	let teamId: string | null = null;
+	const teamRaw = formData.get('teamId');
+	if (typeof teamRaw === 'string' && teamRaw.trim() !== '') {
+		const t = z.string().uuid().safeParse(teamRaw.trim());
+		if (!t.success) throw error(400, 'Invalid team id');
+		if (!(await isTeamMember(userId, t.data))) {
+			throw error(403, 'Forbidden');
+		}
+		teamId = t.data;
+	}
 	const created: { id: string; name: string }[] = [];
 
 	for (const file of files) {
@@ -39,7 +51,8 @@ export const POST: RequestHandler = async ({ request }) => {
 				parentIdRaw,
 				plain,
 				safeUploadFileName(file.name),
-				file.type || 'application/octet-stream'
+				file.type || 'application/octet-stream',
+				teamId ? { teamId } : undefined
 			);
 			created.push(row);
 		} catch (e) {

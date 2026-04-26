@@ -46,3 +46,27 @@ export function tigrisKeyNewSubfolder(parentFolderStoredPath: string, folderId: 
 	const p = tigrisFolderPrefixFromStoredPath(parentFolderStoredPath);
 	return `${p}folder/${folderId}/.keep`;
 }
+
+// --- Team-scoped (paths under `teams/<teamId>/...`) ---
+
+export function tigrisKeyNewFileAtRootTeam(teamId: string, fileId: string, safeName: string): string {
+	return `teams/${teamId}/${fileId}/${safeName}`;
+}
+
+export function tigrisKeyNewFileInsideFolderTeam(
+	parentFolderStoredPath: string,
+	fileId: string,
+	safeName: string
+): string {
+	const p = tigrisFolderPrefixFromStoredPath(parentFolderStoredPath);
+	return `${p}${fileId}/${safeName}`;
+}
+
+export function tigrisKeyNewFolderAtRootTeam(teamId: string, folderId: string): string {
+	return `teams/${teamId}/folder/${folderId}/.keep`;
+}
+
+export function tigrisKeyNewSubfolderTeam(parentFolderStoredPath: string, folderId: string): string {
+	const p = tigrisFolderPrefixFromStoredPath(parentFolderStoredPath);
+	return `${p}folder/${folderId}/.keep`;
+}

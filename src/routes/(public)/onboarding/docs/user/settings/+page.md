@@ -10,9 +10,9 @@ Tune **theme**, **font**, and **text size** so the app matches your environment 
 
 The app uses **Paraglide** for locales. Pick a language in settings so in-app strings and localized routes (including **`/onboarding/docs`**) resolve consistently.
 
-## Search
+## Find options quickly
 
-The main navbar includes a **Search** field as part of the shell. Behavior may evolve; settings that relate to search will live alongside other preferences in the same dialog.
+**Settings** has a field at the top to **filter the list of settings sections** by name (for example, type “theme” to jump to appearance). This is not a search across your files; file browsing remains under **Home**, **Shared**, **Teams**, and **Trash** in the sidebar.
 
 ## Profile
 

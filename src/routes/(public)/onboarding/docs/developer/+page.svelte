@@ -12,7 +12,7 @@
 		{
 			href: '/onboarding/docs/developer/rest-api',
 			title: 'REST API reference',
-			desc: 'Method and path catalog for `api/auth`, `api/drive`, `api/developer`, `api/public`, and cron.',
+			desc: 'Method and path catalog for `api/auth`, `api/teams`, `api/drive`, `api/developer`, `api/public`, and cron.',
 			Icon: LucideListTree
 		},
 		{

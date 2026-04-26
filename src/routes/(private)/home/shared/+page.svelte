@@ -1,6 +1,6 @@
 <script lang="ts">
+	import { afterNavigate, goto } from '$app/navigation';
 	import { browser } from '$app/environment';
-	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { fetchWithSession } from '$lib/client/fetch-session';
 	import { resolveHref } from '$lib/url/resolve-href';
@@ -14,7 +14,7 @@
 	import type { StorageProviderId } from '$lib/model/storage-provider';
 	import { storageProviderLabel } from '$lib/model/storage-provider';
 	import { StatusColorEnum } from '$lib/model/enum/color.enum';
-	import { driveListRefresh } from '$lib/state/drive-refresh.svelte';
+	import { registerDriveListReload } from '$lib/state/drive-refresh.svelte';
 	import { driveStorage } from '$lib/state/storage-provider.svelte';
 	import { toastService } from '$lib/service/toast.service.svelte';
 	import { formatBytes } from '$lib/tool/format-bytes';
@@ -26,6 +26,7 @@
 		LucideFolder,
 		LucideLink
 	} from '@lucide/svelte';
+	import { onMount } from 'svelte';
 
 	let { data }: PageProps = $props();
 
@@ -104,12 +105,13 @@
 		}
 	}
 
-	$effect(() => {
-		if (!browser) return;
-		void driveListRefresh.tick;
-		void driveStorage.current;
-		void page.url.searchParams.get('folder');
+	onMount(() => {
 		void loadShared();
+		return registerDriveListReload(() => void loadShared());
+	});
+
+	afterNavigate(() => {
+		if (browser) void loadShared();
 	});
 
 	const sortedRows = $derived(rows.slice().sort((a, b) => a.name.localeCompare(b.name)));

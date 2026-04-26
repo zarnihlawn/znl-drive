@@ -82,7 +82,8 @@ async function uploadOneFileChunked(
 	file: File,
 	storageProvider: StorageProviderId,
 	parentFolderId: string | null | undefined,
-	onProgress: (loaded: number, total: number) => void
+	onProgress: (loaded: number, total: number) => void,
+	teamId?: string | null
 ): Promise<void> {
 	const chunkCount = Math.max(1, Math.ceil(file.size / UPLOAD_CHUNK_BYTES));
 	let uploadId: string | undefined;
@@ -102,6 +103,7 @@ async function uploadOneFileChunked(
 			fd.append('fileName', file.name);
 			fd.append('mimeType', file.type || 'application/octet-stream');
 			if (parentFolderId) fd.append('parentId', parentFolderId);
+			if (teamId) fd.append('teamId', teamId);
 		}
 
 		const res = await postChunk(fd, onProgress, file.size, loaded);
@@ -119,7 +121,8 @@ export function uploadFilesWithProgress(
 	files: File[],
 	storageProvider: StorageProviderId,
 	onProgress: (loaded: number, total: number) => void,
-	parentFolderId?: string | null
+	parentFolderId?: string | null,
+	teamId?: string | null
 ): Promise<{ ok: boolean }> {
 	return new Promise((resolve, reject) => {
 		const totalBytes = files.reduce((s, f) => s + f.size, 0);
@@ -134,7 +137,8 @@ export function uploadFilesWithProgress(
 						parentFolderId ?? undefined,
 						(loaded, total) => {
 							onProgress(doneBytes + loaded, totalBytes);
-						}
+						},
+						teamId
 					);
 					doneBytes += file.size;
 					onProgress(doneBytes, totalBytes);
@@ -142,6 +146,7 @@ export function uploadFilesWithProgress(
 					const fd = new FormData();
 					fd.append('storageProvider', storageProvider);
 					if (parentFolderId) fd.append('parentId', parentFolderId);
+					if (teamId) fd.append('teamId', teamId);
 					fd.append('file', file);
 					await postMultipart(fd, (loaded, total) => {
 						onProgress(doneBytes + loaded, totalBytes);

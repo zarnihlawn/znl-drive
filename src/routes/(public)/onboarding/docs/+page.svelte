@@ -35,7 +35,7 @@
 				<LucideFolderOpen class="mb-2 size-10 text-primary" aria-hidden="true" />
 				<h2 class="d-card-title text-lg">User manual</h2>
 				<p class="text-sm text-base-content/70">
-					Home, files, sharing, trash, public links, storage targets, and settings.
+					Home, teams, files, sharing, trash, public links, storage targets, and settings.
 				</p>
 			</div>
 		</a>
@@ -79,7 +79,8 @@
 				and sign in.
 			</li>
 			<li>
-				Use <strong>Home</strong> for your files; switch <strong>Storage</strong> in the navbar when needed.
+				Use <strong>Home</strong> for your files; use the sidebar for <strong>Shared</strong>, <strong>Teams</strong>,
+				<strong>Trash</strong>, and more. Switch <strong>Storage</strong> in the top bar when needed.
 			</li>
 			<li>
 				Read <a

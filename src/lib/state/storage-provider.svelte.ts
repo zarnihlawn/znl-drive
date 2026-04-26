@@ -1,3 +1,4 @@
+import { bumpDriveListRefresh } from '$lib/state/drive-refresh.svelte';
 import {
 	STORAGE_PROVIDER_STORAGE_KEY,
 	type StorageProviderId,
@@ -16,4 +17,5 @@ export function hydrateStorageProviderFromStorage(): void {
 export function setCurrentStorageProvider(v: StorageProviderId): void {
 	driveStorage.current = v;
 	localStorage.setItem(STORAGE_PROVIDER_STORAGE_KEY, v);
+	bumpDriveListRefresh();
 }

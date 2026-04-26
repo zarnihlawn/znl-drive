@@ -1,14 +1,16 @@
+import { resolveParentFolderForTeam } from '$lib/server/drive-parent-team';
 import { resolveParentFolderForUser } from '$lib/server/drive-parent';
 import {
 	localPathNewFileAtRoot,
 	localPathNewFileInsideFolder,
 	tigrisKeyNewFileAtRoot,
+	tigrisKeyNewFileAtRootTeam,
 	tigrisKeyNewFileInsideFolder
 } from '$lib/server/drive-storage-layout';
 import { sealFileBuffer } from '$lib/server/drive-seal';
 import { db } from '$lib/server/db';
 import { MainFileSchema } from '$lib/server/db/schema/main-schema/main.schema';
-import { localUserUploadDir } from '$lib/server/local-drive-path';
+import { localTeamUploadDir, localUserUploadDir } from '$lib/server/local-drive-path';
 import { TigrisUtil } from '$lib/service/tigris.service.svelte';
 import type { StorageProviderId } from '$lib/model/storage-provider';
 import { mkdir, writeFile } from 'node:fs/promises';
@@ -27,20 +29,41 @@ export async function persistSealedUpload(
 	parentIdRaw: unknown,
 	plain: Buffer,
 	originalFileName: string,
-	mimeType: string
+	mimeType: string,
+	opts?: { teamId?: string | null }
 ): Promise<{ id: string; name: string }> {
 	if (plain.length > MAX_BYTES) {
 		throw new Error(`File too large (max ${MAX_BYTES} bytes)`);
 	}
 
 	const sealed = sealFileBuffer(plain);
-	const parentFolder = await resolveParentFolderForUser(userId, provider, parentIdRaw);
+	const teamId = opts?.teamId ?? null;
+	const parentFolder = teamId
+		? await resolveParentFolderForTeam(userId, teamId, provider, parentIdRaw)
+		: await resolveParentFolderForUser(userId, provider, parentIdRaw);
 	const id = randomUUID();
 	const name = safeUploadFileName(originalFileName);
 	const stored = sealed.buffer;
 
+	const baseInsert = {
+		id,
+		ownerId: userId,
+		teamId,
+		parentId: parentFolder?.id ?? null,
+		itemType: 'file' as const,
+		name,
+		mimeType,
+		sizeBytes: sealed.originalSize,
+		isPinned: false,
+		isStarred: false,
+		trashedAt: null,
+		isEncrypted: true,
+		isCompressed: true,
+		color: 'base' as const
+	};
+
 	if (provider === 'local') {
-		const userDir = localUserUploadDir(userId);
+		const userDir = teamId ? localTeamUploadDir(teamId) : localUserUploadDir(userId);
 		await mkdir(userDir, { recursive: true });
 		const diskPath = parentFolder
 			? localPathNewFileInsideFolder(parentFolder.path, id, name)
@@ -49,46 +72,24 @@ export async function persistSealedUpload(
 		await writeFile(diskPath, stored);
 
 		await db.insert(MainFileSchema).values({
-			id,
-			ownerId: userId,
-			parentId: parentFolder?.id ?? null,
-			itemType: 'file',
+			...baseInsert,
 			path: diskPath,
-			name,
-			mimeType,
-			sizeBytes: sealed.originalSize,
-			storageProvider: 'local',
-			isPinned: false,
-			isStarred: false,
-			trashedAt: null,
-			isEncrypted: true,
-			isCompressed: true,
-			color: 'base'
+			storageProvider: 'local'
 		});
 	} else {
 		const objectKey = parentFolder
 			? tigrisKeyNewFileInsideFolder(parentFolder.path, id, name)
-			: tigrisKeyNewFileAtRoot(userId, id, name);
+			: teamId
+				? tigrisKeyNewFileAtRootTeam(teamId, id, name)
+				: tigrisKeyNewFileAtRoot(userId, id, name);
 		await TigrisUtil.upload(objectKey, stored, {
 			contentType: 'application/octet-stream'
 		});
 
 		await db.insert(MainFileSchema).values({
-			id,
-			ownerId: userId,
-			parentId: parentFolder?.id ?? null,
-			itemType: 'file',
+			...baseInsert,
 			path: objectKey,
-			name,
-			mimeType,
-			sizeBytes: sealed.originalSize,
-			storageProvider: 'tigris',
-			isPinned: false,
-			isStarred: false,
-			trashedAt: null,
-			isEncrypted: true,
-			isCompressed: true,
-			color: 'base'
+			storageProvider: 'tigris'
 		});
 	}
 

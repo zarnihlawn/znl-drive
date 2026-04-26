@@ -1,9 +1,9 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { localizeHref } from '$lib/paraglide/runtime';
 	import { fetchWithSession } from '$lib/client/fetch-session';
 	import { pathWithoutBase } from '$lib/url/path-without-base';
-	import { resolveHref } from '$lib/url/resolve-href';
 	import { page } from '$app/state';
 	import { daisyDropdown } from '$lib/actions/daisy-dropdown';
 	import { uploadFilesWithProgress } from '$lib/client/upload-drive';
@@ -32,7 +32,8 @@
 		LucidePlus,
 		LucideShare,
 		LucideTrash,
-		LucideUpload
+		LucideUpload,
+		LucideUsers
 	} from '@lucide/svelte';
 	import { onMount } from 'svelte';
 
@@ -52,9 +53,24 @@
 	let appSettingsDialog = $state<AppSettingsDialog | undefined>(undefined);
 	let appProfileDialog = $state<AppProfileDialog | undefined>(undefined);
 
+	let newTeamDialog = $state<HTMLDialogElement | null>(null);
+	let newTeamName = $state('');
+	let newTeamEmailDraft = $state('');
+	let newTeamEmails = $state<string[]>([]);
+	let creatingTeam = $state(false);
+
 	onMount(() => {
 		hydrateStorageProviderFromStorage();
 	});
+
+	const driveParentForNew = $derived(
+		data.teamView
+			? (data.currentFolder?.id ?? data.teamView.rootFolderId)
+			: (data.currentFolder?.id ?? null)
+	);
+	const activeStorageProvider = $derived(
+		data.teamView?.storageProvider ?? driveStorage.current
+	);
 
 	function onStorageProviderSelect(e: Event) {
 		const v = (e.currentTarget as HTMLSelectElement).value as StorageProviderId;
@@ -78,6 +94,75 @@
 		queueMicrotask(() => newFolderDialog?.showModal());
 	}
 
+	function openNewTeamDialog() {
+		newTeamName = '';
+		newTeamEmailDraft = '';
+		newTeamEmails = [];
+		queueMicrotask(() => newTeamDialog?.showModal());
+	}
+
+	function addNewTeamEmailChip() {
+		const raw = newTeamEmailDraft.trim();
+		if (!raw) return;
+		const parts = raw.split(/[\s,;]+/).map((s) => s.trim()).filter(Boolean);
+		const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		for (const p of parts) {
+			if (!re.test(p)) {
+				toastService.addToast(`Invalid email: ${p}`, StatusColorEnum.WARNING);
+				continue;
+			}
+			const lower = p.toLowerCase();
+			if (!newTeamEmails.includes(lower)) newTeamEmails = [...newTeamEmails, lower];
+		}
+		newTeamEmailDraft = '';
+	}
+
+	function removeNewTeamEmail(email: string) {
+		newTeamEmails = newTeamEmails.filter((e) => e !== email);
+	}
+
+	async function submitNewTeam() {
+		const name = newTeamName.trim();
+		if (!name) {
+			toastService.addToast('Enter a team name', StatusColorEnum.WARNING);
+			return;
+		}
+		creatingTeam = true;
+		try {
+			const r = await fetchWithSession(resolve('/api/teams'), {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({
+					name,
+					storageProvider: activeStorageProvider,
+					inviteEmails: newTeamEmails
+				})
+			});
+			if (!r.ok) throw new Error(await r.text());
+			bumpDriveListRefresh();
+			const j = (await r.json()) as { teamId?: string; addedMembers?: number; pendingInvites?: number };
+			const extra: string[] = [];
+			if (j.addedMembers) extra.push(`${j.addedMembers} member(s) added`);
+			if (j.pendingInvites) extra.push(`${j.pendingInvites} invite(s) pending`);
+			toastService.addToast(
+				extra.length ? `Team created — ${extra.join('; ')}` : 'Team created',
+				StatusColorEnum.SUCCESS
+			);
+			newTeamDialog?.close();
+			const id = j.teamId;
+			if (id) {
+				void goto(resolve(`/home/team/${id}`));
+			}
+		} catch (e) {
+			toastService.addToast(
+				e instanceof Error ? e.message : 'Failed to create team',
+				StatusColorEnum.ERROR
+			);
+		} finally {
+			creatingTeam = false;
+		}
+	}
+
 	async function submitNewFolder() {
 		const name = newFolderName.trim();
 		if (!name) {
@@ -91,8 +176,9 @@
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({
 					name,
-					storageProvider: driveStorage.current,
-					...(data.currentFolder ? { parentId: data.currentFolder.id } : {})
+					storageProvider: activeStorageProvider,
+					...(driveParentForNew ? { parentId: driveParentForNew } : {}),
+					...(data.teamView ? { teamId: data.teamView.id } : {})
 				})
 			});
 			if (!r.ok) throw new Error(await r.text());
@@ -122,11 +208,12 @@
 		try {
 			await uploadFilesWithProgress(
 				pickerFiles,
-				driveStorage.current,
+				activeStorageProvider,
 				(loaded, total) => {
 					uploadProgress = total ? Math.round((100 * loaded) / total) : 0;
 				},
-				data.currentFolder?.id ?? null
+				driveParentForNew,
+				data.teamView?.id ?? null
 			);
 			bumpDriveListRefresh();
 			toastService.addToast('Upload complete', StatusColorEnum.SUCCESS);
@@ -173,6 +260,19 @@
 				{ href: null, label: 'Shared', isLast: true }
 			];
 		}
+		if (data.teamView) {
+			if (data.currentFolder) {
+				return [
+					{ href: resolve('/home'), label: 'Home', isLast: false },
+					{ href: resolve(`/home/team/${data.teamView.id}`), label: data.teamView.name, isLast: false },
+					{ href: null, label: data.currentFolder.name, isLast: true }
+				];
+			}
+			return [
+				{ href: resolve('/home'), label: 'Home', isLast: false },
+				{ href: null, label: data.teamView.name, isLast: true }
+			];
+		}
 		if (data.currentFolder) {
 			return [
 				{ href: resolve('/home'), label: 'Home', isLast: false },
@@ -210,7 +310,9 @@
 	const upFolderHref = $derived.by(() => {
 		if (!data.currentFolder) {
 			if (data.trashView) return resolve('/home/trash');
-			return data.sharedView ? resolve('/home/shared') : resolve('/home');
+			if (data.sharedView) return resolve('/home/shared');
+			if (data.teamView) return resolve(`/home/team/${data.teamView.id}`);
+			return resolve('/home');
 		}
 		return data.currentFolder.upHref;
 	});
@@ -219,6 +321,7 @@
 	const pageTitle = $derived.by(() => {
 		if (data.trashView) return 'Trash';
 		if (data.sharedView) return data.currentFolder?.name ?? 'Shared';
+		if (data.teamView) return data.currentFolder?.name ?? data.teamView.name;
 		if (data.currentFolder) return data.currentFolder.name;
 		const segments = pathWithoutBase(page.url.pathname).split('/').filter(Boolean);
 		const last = segments.at(-1);
@@ -241,14 +344,6 @@
 		<div class="d-navbar-start">
 			<a class="d-btn text-xl d-btn-ghost" href={resolve('/home')}>ZNL-DRIVE</a>
 		</div>
-		<div class="d-navbar-center">
-			<input
-				type="search"
-				placeholder="Search"
-				class="d-input-bordered d-input w-full max-w-md"
-				autocomplete="off"
-			/>
-		</div>
 		<div class="d-navbar-end gap-3 sm:gap-4">
 			<a
 				href={localizeHref('/onboarding/docs')}
@@ -259,10 +354,13 @@
 				Docs
 			</a>
 			<select
-				class="d-select-bordered d-select max-w-[12rem] min-w-[10rem]"
-				value={driveStorage.current}
+				class="d-select-bordered d-select max-w-[12rem] min-w-[10rem] {!data.teamView
+					? ''
+					: 'cursor-not-allowed opacity-80'}"
+				value={activeStorageProvider}
 				onchange={onStorageProviderSelect}
 				aria-label="Storage provider"
+				disabled={Boolean(data.teamView)}
 			>
 				{#each STORAGE_PROVIDERS as provider (provider)}
 					<option value={provider}>{storageProviderLabel(provider)}</option>
@@ -358,6 +456,16 @@
 									Upload file
 								</button>
 							</li>
+							<li>
+								<button
+									type="button"
+									class="w-full justify-start gap-2"
+									onclick={openNewTeamDialog}
+								>
+									<LucideUsers class="size-4 shrink-0" aria-hidden="true" />
+									New team
+								</button>
+							</li>
 						</ul>
 					</div>
 				{/if}
@@ -366,7 +474,7 @@
 					<div class="d-modal-box max-w-lg">
 						<h3 class="d-font-title text-lg font-bold">Upload files</h3>
 						<p class="py-2 text-sm text-base-content/70">
-							Using storage: <strong>{storageProviderLabel(driveStorage.current)}</strong>
+							Using storage: <strong>{storageProviderLabel(activeStorageProvider)}</strong>
 							— local files go to <code class="text-xs">~/Documents/znl-drive/</code>; Tigris uses
 							your bucket.
 						</p>
@@ -408,7 +516,7 @@
 					<div class="d-modal-box max-w-md">
 						<h3 class="d-font-title text-lg font-bold">New folder</h3>
 						<p class="py-2 text-sm text-base-content/70">
-							Storage: <strong>{storageProviderLabel(driveStorage.current)}</strong>
+							Storage: <strong>{storageProviderLabel(activeStorageProvider)}</strong>
 						</p>
 						<label class="d-form-control w-full">
 							<span class="d-label-text">Folder name</span>
@@ -432,6 +540,71 @@
 								onclick={() => void submitNewFolder()}
 							>
 								{creatingFolder ? 'Creating…' : 'Create'}
+							</button>
+						</div>
+					</div>
+				</dialog>
+
+				<dialog bind:this={newTeamDialog} class="d-modal">
+					<div class="d-modal-box max-w-lg">
+						<h3 class="d-font-title text-lg font-bold">New team</h3>
+						<p class="py-2 text-sm text-base-content/70">
+							Shared drive for you and members. Storage:
+							<strong>{storageProviderLabel(activeStorageProvider)}</strong> (applies to this team)
+						</p>
+						<label class="d-form-control w-full max-w-md">
+							<span class="d-label-text">Team name</span>
+							<input
+								type="text"
+								class="d-input-bordered d-input w-full"
+								bind:value={newTeamName}
+								disabled={creatingTeam}
+								placeholder="My team"
+								onkeydown={(e) => e.key === 'Enter' && void submitNewTeam()}
+							/>
+						</label>
+						<div class="d-form-control mt-3 w-full max-w-md">
+							<span class="d-label-text">Invite others (emails)</span>
+							<div class="flex flex-wrap items-center gap-1 rounded-lg border border-base-300 bg-base-200/30 p-2">
+								{#each newTeamEmails as em (em)}
+									<span class="d-badge d-badge-ghost gap-1"
+										>{em}
+										<button
+											type="button"
+											class="d-btn d-btn-ghost d-btn-xs min-h-0 px-0"
+											onclick={() => removeNewTeamEmail(em)}
+											aria-label="Remove">×</button
+										></span
+									>
+								{/each}
+								<input
+									type="text"
+									class="d-input-ghost d-input d-input-sm min-w-[8rem] flex-1"
+									placeholder="user@example.com"
+									bind:value={newTeamEmailDraft}
+									disabled={creatingTeam}
+									autocomplete="off"
+									onkeydown={(e) => {
+										if (e.key === 'Enter' || e.key === ',') {
+											e.preventDefault();
+											addNewTeamEmailChip();
+										}
+									}}
+									onblur={() => addNewTeamEmailChip()}
+								/>
+							</div>
+						</div>
+						<div class="d-modal-action">
+							<form method="dialog">
+								<button type="submit" class="d-btn" disabled={creatingTeam}>Cancel</button>
+							</form>
+							<button
+								type="button"
+								class="d-btn d-btn-primary"
+								disabled={creatingTeam || !newTeamName.trim()}
+								onclick={() => void submitNewTeam()}
+							>
+								{creatingTeam ? 'Creating…' : 'Create team'}
 							</button>
 						</div>
 					</div>
@@ -477,6 +650,27 @@
 						Dashboard</a
 					>
 				</div>
+
+				<span class="d-divider"></span>
+				<div class="flex flex-col gap-2">
+					<p class="px-1 text-xs font-semibold tracking-wide text-base-content/50 uppercase">Teams</p
+					>
+					{#if data.teams.length === 0}
+						<p class="px-1 text-sm text-base-content/50">No teams yet — use <strong>NEW</strong> →
+							<strong>New team</strong></p
+						>
+					{:else}
+						{#each data.teams as t (t.id)}
+							<a
+								class="d-btn d-btn-wide d-btn-ghost d-btn-outline d-btn-sm"
+								href={resolve(`/home/team/${t.id}`)}
+							>
+								<LucideUsers class="size-4" />
+								<span class="truncate text-left">{t.name}</span>
+							</a>
+						{/each}
+					{/if}
+				</div>
 			</aside>
 			<!-- Main Content -->
 			<div class="flex min-h-0 min-w-0 flex-1 flex-col px-5">
@@ -499,21 +693,7 @@
 											<span aria-current="page">{crumb.label}</span>
 										{:else if crumb.href}
 											<a href={crumb.href}>{crumb.label}</a>
-										{:else}<nav class="d-breadcrumbs min-w-0 pr-2 italic" aria-label="Breadcrumb">
-												<ul>
-													{#each breadcrumbs as crumb, i (String(i) + (crumb.href ?? '') + crumb.label)}
-														<li>
-															{#if crumb.isLast}
-																<span aria-current="page">{crumb.label}</span>
-															{:else if crumb.href}
-																<a href={crumb.href}>{crumb.label}</a>
-															{:else}
-																<span>{crumb.label}</span>
-															{/if}
-														</li>
-													{/each}
-												</ul>
-											</nav>
+										{:else}
 											<span>{crumb.label}</span>
 										{/if}
 									</li>
@@ -523,7 +703,7 @@
 					</div>
 					<div class="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-6 gap-y-2 text-sm">
 						<span class="text-sm font-medium text-error"
-							>{storageProviderLabel(driveStorage.current)}</span
+							>{storageProviderLabel(activeStorageProvider)}</span
 						>
 					</div>
 				</div>

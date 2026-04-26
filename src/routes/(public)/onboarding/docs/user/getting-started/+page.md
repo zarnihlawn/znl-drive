@@ -13,12 +13,15 @@ Use the onboarding page to open the app. Choose **Get Started** to reach **Home*
 - Open **Home** for your own files and folders.
 - Open **Shared** for items others shared with you (read-only in the UI).
 - Open **Trash** for items you moved to trash.
+- Open **Recent** for recently used items.
+- Open **Dashboard** for usage-style summaries.
+- Under **Teams**, open a **team drive** (shared space for you and other members) when you belong to or create a team.
 
-The top bar shows **ZNL-DRIVE**, a search field (wired in the layout for future use), your **storage provider** selector, and your profile menu.
+The top bar shows **ZNL-DRIVE**, a **Docs** link (on larger viewports), your **storage provider** selector, and your **profile** menu (**Profile**, **Settings**, **Logout**). There is no global file search in the top bar; browse and use **Home**, **Shared**, **Teams**, and **Trash** from the sidebar instead.
 
 ## Storage in the navbar
 
-Before uploading, pick the storage target you want (**Local** or **Tigris**) from the dropdown in the top bar. New folders and uploads use the currently selected provider. See [Storage providers](./storage-providers) for details.
+Before uploading, pick the storage target you want (**Local** or **Tigris**) from the dropdown in the top bar. New folders and uploads use the currently selected provider, except in a **team drive**, where the team’s storage target applies. See [Storage providers](./storage-providers) for details.
 
 ## Next steps
 

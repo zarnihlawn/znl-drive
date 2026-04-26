@@ -324,27 +324,45 @@
 		};
 	}
 
+	const teamBase = $derived(
+		data.teamView ? resolve(`/home/team/${data.teamView.id}`) : resolve('/home')
+	);
+
 	function enterFolder(item: DriveItem) {
 		if (item.itemType !== 'folder') return;
-		goto(`${resolve('/home')}?folder=${encodeURIComponent(item.id)}`);
+		goto(`${teamBase}?folder=${encodeURIComponent(item.id)}`);
+	}
+
+	function teamStorage(): StorageProviderId {
+		return data.teamView?.storageProvider ?? driveStorage.current;
+	}
+
+	function dropParentId(): string | null {
+		if (!data.teamView) return null;
+		return page.url.searchParams.get('folder') ?? data.teamView.rootFolderId;
 	}
 
 	async function loadFiles() {
 		loading = true;
 		loadError = null;
 		try {
+			if (!data.teamView) {
+				rows = [];
+				return;
+			}
 			const folderId = page.url.searchParams.get('folder');
 			const qs = new URLSearchParams({
-				storageProvider: driveStorage.current
+				storageProvider: teamStorage()
 			});
+			qs.set('teamId', data.teamView.id);
 			if (folderId) qs.set('parentId', folderId);
 			const r = await fetchWithSession(`${resolveHref('/api/drive/files')}?${qs}`);
 			if (!r.ok) {
 				const t = await r.text();
 				throw new Error(t || r.statusText);
 			}
-			const data = (await r.json()) as { files: ApiFile[] };
-			rows = data.files.map(mapRow);
+			const payload = (await r.json()) as { files: ApiFile[] };
+			rows = payload.files.map(mapRow);
 		} catch (e) {
 			loadError = e instanceof Error ? e.message : 'Failed to load files';
 			rows = [];
@@ -362,7 +380,7 @@
 	/** Parent folder URL from server (home root or parent folder). */
 	const backFolderHref = $derived.by(() => {
 		const cf = data.currentFolder;
-		if (!cf) return resolve('/home');
+		if (!cf) return teamBase;
 		return cf.upHref;
 	});
 
@@ -486,16 +504,18 @@
 
 	async function uploadDroppedFiles(fileList: File[]) {
 		if (!fileList.length) return;
+		if (!data.teamView) return;
 		dropUploading = true;
 		dropProgress = 0;
 		try {
 			await uploadFilesWithProgress(
 				fileList,
-				driveStorage.current,
+				teamStorage(),
 				(loaded, total) => {
 					dropProgress = total ? Math.round((100 * loaded) / total) : 0;
 				},
-				page.url.searchParams.get('folder')
+				dropParentId(),
+				data.teamView.id
 			);
 			bumpDriveListRefresh();
 			toastService.addToast(`Uploaded ${fileList.length} file(s)`, StatusColorEnum.SUCCESS);
@@ -532,11 +552,8 @@
 
 <div class="flex min-h-0 flex-1 flex-col gap-6 pb-8">
 	<p class="shrink-0 text-sm text-base-content/70">
-		List is filtered by the storage provider in the header. Drag files from your computer onto the
-		table to upload with progress (same pipeline as <strong>NEW</strong>). Local storage writes
-		under
-		<code class="text-xs">~/Documents/znl-drive/&lt;your-user-id&gt;/</code> (multipart handled on the
-		server via FormData; Express multer is not used in SvelteKit handlers).
+		Team drive — all members can add, edit, and delete here. Storage is fixed for this team (see
+		header). Drag files onto the table to upload; use <strong>NEW</strong> for folders or upload.
 	</p>
 
 	{#if loading && rows.length === 0}

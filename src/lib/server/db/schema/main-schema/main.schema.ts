@@ -11,10 +11,13 @@ import {
 } from 'drizzle-orm/pg-core';
 import { MasterStorageProviderSchema } from '../master-schema/master.schema';
 import { createUpdateTimestamp, uuidSchemaWrapper } from '../schema-wrapper';
+import { TeamSchema } from './team.schema';
 
 export const MainFileSchema = pgTable('main_file', {
 	...uuidSchemaWrapper,
 	ownerId: text('owner_id').notNull(),
+	/** When set, file belongs to a team drive (any member with matching storage may CRUD). */
+	teamId: uuid('team_id').references(() => TeamSchema.id, { onDelete: 'cascade' }),
 	parentId: uuid('parent_id').references((): AnyPgColumn => MainFileSchema.id, {
 		onDelete: 'cascade'
 	}),
@@ -33,7 +36,9 @@ export const MainFileSchema = pgTable('main_file', {
 	isEncrypted: boolean('is_encrypted').notNull().default(true),
 	isCompressed: boolean('is_compressed').notNull().default(true),
 	...createUpdateTimestamp
-});
+},
+	(t) => [index('main_file_teamId_idx').on(t.teamId)]
+);
 
 export const MainFileShareSchema = pgTable('main_file_share', {
 	...uuidSchemaWrapper,
